@@ -4,10 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#2F6B3F">
-<meta name="description" content="E.F Móveis e Planejados: projetos, peças, plano de corte e orçamentos de marcenaria.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="E.F Móveis">
@@ -731,19 +730,40 @@ function ordenados(){
 }
 function ilustracao(){return `<svg width="120" height="84" viewBox="0 0 120 84" aria-hidden="true"><rect x="8" y="10" width="104" height="64" rx="4" fill="var(--wood)"/><rect x="14" y="16" width="50" height="30" fill="var(--piece)" stroke="var(--ink)" stroke-width="1.5"/><rect x="68" y="16" width="38" height="30" fill="var(--piece)" stroke="var(--ink)" stroke-width="1.5"/><rect x="14" y="50" width="30" height="18" fill="var(--piece)" stroke="var(--ink)" stroke-width="1.5"/><path d="M8 80h104" stroke="var(--tape)" stroke-width="4"/></svg>`}
 
-function vLista(){return vListaBase()+(S.backend==="local"?backupHTML():"");}
-function backupHTML(){return `<section class="card section-gap backup"><h3>${icon("box",18)}Seus dados</h3>
-  <p class="as-note" style="margin:0 0 12px;color:var(--muted)">Os projetos ficam guardados neste aparelho. Faça um backup de vez em quando e use o mesmo arquivo para passar tudo para outro celular ou computador.</p>
-  <div class="two"><button class="btn" data-act="backupSalvar">${icon("pdf",17)}Fazer backup</button><button class="btn" data-act="backupAbrir">${icon("plus",17)}Restaurar</button></div>
+function vLista(){return vListaBase()+backupHTML();}
+function backupHTML(){const nuvem=S.backend==="db";
+  return `<section class="card section-gap backup"><h3>${icon("box",18)}Levar para o computador</h3>
+  <p class="as-note" style="margin:0 0 12px;color:var(--muted)">${nuvem?"Baixe o app como um arquivo e abra no computador com dois cliques. Para levar os projetos junto, faça o backup aqui e use <b>Restaurar</b> no app baixado.":"Os projetos ficam guardados neste aparelho. Faça um backup de vez em quando e use o mesmo arquivo para passar tudo para outro celular ou computador."}</p>
+  <button class="btn dark wide" data-act="baixarApp">${icon("pdf",18)}Baixar o app para o computador</button>
+  <div class="two" style="margin-top:8px"><button class="btn" data-act="backupSalvar">${icon("pdf",17)}Fazer backup</button><button class="btn" data-act="backupAbrir">${icon("plus",17)}Restaurar</button></div>
   <input type="file" id="backup-in" accept=".json,application/json" hidden></section>`;}
-function backupSalvar(){const o={};S.projetos.forEach((v,k)=>o[k]=v);
+async function salvarArquivo(nome,blob){
+  if(window.claude&&window.claude.use){let dl=null;try{dl=await window.claude.use("downloads");}catch(e){}
+    if(dl){try{await dl.save({filename:nome,data:blob});return true;}catch(e){if(e&&e.code==="declined")return false;if(e&&e.code==="rate_limited"){toast("Aguarde um instante e tente de novo.");return false;}}}}
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=nome;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);return true;}
+function htmlDoApp(){
+  const d=document.documentElement.cloneNode(true);
+  d.querySelectorAll("script").forEach(sc=>{const src=sc.getAttribute("src")||"";
+    const fica=/cdnjs\.cloudflare\.com\/ajax\/libs\/(jspdf|three\.js)\//.test(src)||(!src&&sc.textContent.includes("function htmlDoApp"));if(!fica)sc.remove();});
+  d.querySelectorAll("style").forEach(st=>{if(!st.textContent.includes("--tape"))st.remove();});
+  d.querySelectorAll("link").forEach(l=>{if(!/fonts\.(googleapis|gstatic)\.com/.test(l.getAttribute("href")||""))l.remove();});
+  const app=d.querySelector("#app");if(app)app.innerHTML="";
+  const dg=d.querySelector("#dlg");if(dg){dg.removeAttribute("open");const c=dg.querySelector("#dlg-c");if(c)c.innerHTML="";}
+  const t=d.querySelector("#toast");if(t){t.textContent="";t.className="toast";}
+  const b=d.querySelector("body");if(b)[...b.children].forEach(el=>{if(!["app","dlg","toast"].includes(el.id)&&el.tagName!=="SCRIPT"&&!el.matches("nav, .bottomnav"))el.remove();});
+  return "<!DOCTYPE html>\n"+d.outerHTML;}
+async function baixarApp(){
+  try{const ok=await salvarArquivo("ef-moveis-e-planejados.html",new Blob([htmlDoApp()],{type:"text/html"}));
+    if(ok)toast("App baixado. Abra o arquivo no computador com dois cliques.");}
+  catch(e){toast("Não foi possível baixar o app.");}}
+async function backupSalvar(){const o={};S.projetos.forEach((v,k)=>o[k]=v);
   const blob=new Blob([JSON.stringify({app:"ef-moveis",versao:1,data:new Date().toISOString(),projetos:o},null,1)],{type:"application/json"});
-  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`backup-ef-moveis-${hoje()}.json`;document.body.appendChild(a);a.click();
-  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);toast(`Backup com ${S.projetos.size} projeto${S.projetos.size===1?"":"s"} salvo.`);}
+  if(await salvarArquivo(`backup-ef-moveis-${hoje()}.json`,blob))toast(`Backup com ${S.projetos.size} projeto${S.projetos.size===1?"":"s"} salvo.`);}
 function backupRestaurar(file){const fr=new FileReader();fr.onload=()=>{try{const d=JSON.parse(fr.result);const o=d&&d.projetos?d.projetos:d;let n=0;
     Object.entries(o||{}).forEach(([k,v])=>{if(v&&typeof v==="object"&&Array.isArray(v.pecas)){S.projetos.set(k,normalizar(v));n++;}});
     if(!n){toast("Esse arquivo não parece um backup do app.");return;}
-    numerarOS();gravarLocal();render();toast(`${n} projeto${n===1?"":"s"} restaurado${n===1?"":"s"}.`);}
+    numerarOS();S.projetos.forEach((v,k)=>salvar(k));render();toast(`${n} projeto${n===1?"":"s"} restaurado${n===1?"":"s"}.`);}
   catch(e){toast("Não consegui ler o arquivo de backup.");}};fr.readAsText(file);}
 function vListaBase(){
   const todos=ordenados();
@@ -2455,6 +2475,7 @@ function acao(a){
       salvar(S.atual);redesenhar();toast("Lista atualizada. Toque nos itens para pôr o preço.");break;}
     case "exportar":dlgExportar();break;
     case "backupSalvar":backupSalvar();break;
+    case "baixarApp":baixarApp();break;
     case "backupAbrir":{const i=document.getElementById("backup-in");if(i){i.value="";i.click();}break;}
     case "outroArranjo":{const antes=resumoPlano(planejar(p));p.corte.seed=(Number(p.corte.seed)||1)+1;const dep=resumoPlano(planejar(p));salvar(S.atual);const o=document.getElementById("corte-out");if(o)o.innerHTML=vPlano(p);
       toast(dep.chapas<antes.chapas?"Achei um arranjo com menos chapas.":dep.aprov>antes.aprov?"Arranjo novo, com melhor aproveitamento.":"Arranjo novo. Se preferir o anterior, toque de novo.");break;}
