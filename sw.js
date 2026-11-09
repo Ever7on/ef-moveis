@@ -1,5 +1,5 @@
 // Guarda o app no aparelho para abrir mesmo sem internet.
-const CACHE = "ef-moveis-v9";
+const CACHE = "ef-moveis-v10";
 const BASE = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(BASE)).then(() => self.skipWaiting()));

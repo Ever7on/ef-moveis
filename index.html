@@ -532,7 +532,8 @@ async function excluir(id){
 }
 /* ---------- nuvem própria: Firebase Firestore ---------- */
 const FBV="10.14.1",FBKEY="ef-firebase";
-function fbConfig(){try{return JSON.parse(localStorage.getItem(FBKEY)||"null");}catch(e){return null;}}
+const FB_PADRAO={apiKey:"AIzaSyBIc3zR3YP1fNBHXhfEUiOaQka7TW7mIDg",authDomain:"ef-moveis.firebaseapp.com",projectId:"ef-moveis",storageBucket:"ef-moveis.firebasestorage.app",messagingSenderId:"537648014398",appId:"1:537648014398:web:0f279bb83a0ca98eac1d6f"};
+function fbConfig(){try{if(localStorage.getItem(FBKEY+"-off"))return null;return JSON.parse(localStorage.getItem(FBKEY)||"null")||FB_PADRAO;}catch(e){return FB_PADRAO;}}
 function carregarScript(src){return new Promise((ok,er)=>{const s=document.createElement("script");s.src=src;s.onload=ok;s.onerror=er;document.head.appendChild(s);});}
 async function fbCarregar(){if(window.firebase&&firebase.firestore&&firebase.auth)return true;const b=`https://cdn.jsdelivr.net/npm/firebase@${FBV}/`;
   try{await carregarScript(b+"firebase-app-compat.js");await carregarScript(b+"firebase-auth-compat.js");await carregarScript(b+"firebase-firestore-compat.js");return true;}catch(e){return false;}}
@@ -573,7 +574,7 @@ function cardNuvem(){
     <button class="btn ${u?"":"dark"} wide" data-act="nuvem">${u?"Conta da nuvem":cfg?"Entrar na nuvem":"Conectar ao Firebase"}</button></section>`;
 }
 function dlgNuvem(){S.dlgNuvem=true;const cfg=fbConfig(),u=S.fb&&S.fb.user;let h="";
-  if(!cfg){h=`<p class="as-note" style="margin:0 0 10px;color:var(--muted)">No console do Firebase, abra <b>Configurações do projeto → Seus apps → Web</b> e copie o bloco <b>firebaseConfig</b>. Cole aqui embaixo:</p>
+  if(!cfg){h=`<button class="btn dark wide" data-act="fbReligar">Usar a nuvem da E.F Móveis</button><p class="as-note" style="margin:14px 0 10px;color:var(--muted)">Ou, para outro projeto: no console do Firebase, abra <b>Configurações do projeto → Seus apps → Web</b> e copie o bloco <b>firebaseConfig</b>. Cole aqui embaixo:</p>
     <textarea id="fb-cfg" class="in" rows="7" style="font-family:ui-monospace,monospace;font-size:13px" placeholder='const firebaseConfig = {&#10;  apiKey: "...",&#10;  authDomain: "...",&#10;  projectId: "...",&#10;  appId: "..."&#10;};'></textarea>
     <button class="btn dark wide section-gap" data-act="fbSalvarCfg">${icon("check",18)}Salvar configuração</button>`;}
   else if(u){h=`<p style="margin:0 0 12px">Conectado como <b>${esc(u.email)}</b> no projeto <b>${esc(cfg.projectId)}</b>.</p>
@@ -585,11 +586,11 @@ function dlgNuvem(){S.dlgNuvem=true;const cfg=fbConfig(),u=S.fb&&S.fb.user;let h
     <label class="f">Senha<input id="fb-senha" class="in" type="password" autocomplete="current-password"></label></div>
     ${S.fb&&S.fb.erro?`<p class="as-note" style="color:var(--danger)">${esc(S.fb.erro)}</p>`:""}
     <div class="two section-gap"><button class="btn dark" data-act="fbEntrar">Entrar</button><button class="btn" data-act="fbCriar">Criar conta</button></div>
-    <button class="btn wide section-gap" data-act="fbEsquecer">Trocar a configuração</button>`;}
+    <button class="btn wide section-gap" data-act="fbEsquecer">Não usar a nuvem neste aparelho</button>`;}
   abrirDlg(`${cab("Nuvem (Firebase)")}${h}`,"nuvem");}
 async function fbAcao(a){
   if(a==="fbSalvarCfg"){const c=lerConfigTexto((document.getElementById("fb-cfg")||{}).value);if(!c){toast("Não encontrei apiKey e projectId no texto colado.");return;}
-    localStorage.setItem(FBKEY,JSON.stringify(c));toast("Configuração salva.");await fbIniciar();dlgNuvem();return;}
+    localStorage.setItem(FBKEY,JSON.stringify(c));localStorage.removeItem(FBKEY+"-off");toast("Configuração salva.");await fbIniciar();dlgNuvem();return;}
   if(a==="fbEntrar"||a==="fbCriar"){const em=(document.getElementById("fb-email")||{}).value||"",se=(document.getElementById("fb-senha")||{}).value||"";
     if(!em||!se){toast("Preencha e-mail e senha.");return;}
     if(!window.firebase||!firebase.apps.length){await fbIniciar();if(!window.firebase||!firebase.apps.length){toast("O Firebase não carregou.");return;}}
@@ -598,7 +599,7 @@ async function fbAcao(a){
       fecharDlg();S.dlgNuvem=false;toast("Conectado à nuvem.");}
     catch(e){toast(fbErro(e));}return;}
   if(a==="fbSair"){try{await firebase.auth().signOut();}catch(e){}location.reload();return;}
-  if(a==="fbEsquecer"){try{if(window.firebase&&firebase.apps.length)await firebase.auth().signOut();}catch(e){}localStorage.removeItem(FBKEY);location.reload();}
+  if(a==="fbEsquecer"){try{if(window.firebase&&firebase.apps.length)await firebase.auth().signOut();}catch(e){}localStorage.removeItem(FBKEY);localStorage.setItem(FBKEY+"-off","1");location.reload();}
 }
 async function iniciar(){
   render();
@@ -2742,6 +2743,7 @@ function acao(a){
     case "backupSalvar":backupSalvar();break;
     case "baixarApp":baixarApp();break;
     case "nuvem":dlgNuvem();break;
+    case "fbReligar":localStorage.removeItem(FBKEY+"-off");location.reload();break;
     case "fbSalvarCfg":case "fbEntrar":case "fbCriar":case "fbSair":case "fbEsquecer":fbAcao(a);break;
     case "backupAbrir":{const i=document.getElementById("backup-in");if(i){i.value="";i.click();}break;}
     case "outroArranjo":{const antes=resumoPlano(planejar(p));p.corte.seed=(Number(p.corte.seed)||1)+1;const dep=resumoPlano(planejar(p));salvar(S.atual);const o=document.getElementById("corte-out");if(o)o.innerHTML=vPlano(p);

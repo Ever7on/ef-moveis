@@ -47,7 +47,7 @@ Com isso os projetos ficam salvos na nuvem e aparecem em todos os aparelhos em q
 4. **Firestore Database → Criar banco de dados →** escolha um local (ex.: `southamerica-east1`, São Paulo) → modo de produção.
 5. **Firestore → Regras:** apague o que estiver lá, cole o conteúdo do arquivo `firestore.rules` e clique em **Publicar**.
 6. **Configurações do projeto (engrenagem) → Seus apps → ícone `</>` (Web) →** dê um nome e registre. Copie o bloco `firebaseConfig`.
-7. Abra o app, na tela inicial toque em **Conectar ao Firebase**, cole o bloco e toque em **Salvar configuração**.
+7. A configuração do projeto `ef-moveis` já vem embutida no app. Para usar outro projeto, toque em **Conta da nuvem → Não usar a nuvem neste aparelho** e cole outro bloco.
 8. Toque em **Criar conta** com seu e-mail e uma senha (mínimo 6 caracteres). Nos outros aparelhos, cole a mesma configuração e use **Entrar**.
 
 Os projetos que já estavam no aparelho sobem para a nuvem no primeiro login.
