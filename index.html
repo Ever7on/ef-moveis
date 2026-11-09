@@ -137,7 +137,7 @@ main{max-width:880px;margin:0 auto;padding:0 16px 120px}
 .bottomnav button[data-nav="inicio"]{opacity:1;padding:10px 20px}
 .bottomnav .fab{background:var(--tape);color:var(--tape-ink);opacity:1;padding:10px 14px;font-weight:700}
 .bottomnav[hidden]{display:none}
-.fab-float{position:fixed;right:max(16px, calc(50% - 424px));bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:30;border:0;border-radius:999px;background:var(--tape);color:var(--tape-ink);display:flex;align-items:center;gap:8px;padding:15px 20px;font-weight:800;font-size:16px;box-shadow:0 10px 30px rgba(0,0,0,.22)}
+.fab-float{position:fixed;right:max(16px, calc(50% - 704px));bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:30;border:0;border-radius:999px;background:var(--tape);color:var(--tape-ink);display:flex;align-items:center;gap:8px;padding:15px 20px;font-weight:800;font-size:16px;box-shadow:0 10px 30px rgba(0,0,0,.22)}
 
 /* Cabeçalho do projeto */
 .phero{background:var(--surface);border-radius:var(--r-lg);padding:16px;box-shadow:var(--shadow);margin-top:4px;border-top:5px solid var(--tape)}
@@ -447,6 +447,42 @@ button.brand{border:0;background:none;padding:0;display:flex;align-items:center;
 .toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translate(-50%,-10px);background:var(--deep);color:#fff;padding:11px 18px;border-radius:999px;font-size:15px;font-weight:600;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:90vw;text-align:center}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 @media (prefers-reduced-motion:reduce){.toast,.edge::after,.switch input,.switch input::after{transition:none}}
+
+/* ---------- computador: usar a tela inteira ---------- */
+@media (min-width:900px){
+  main{max-width:1440px;padding:0 32px 120px}
+  .appbar{margin:0 -32px;padding-left:32px;padding-right:32px}
+  .presets{grid-template-columns:repeat(5,minmax(0,1fr))}
+  .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rows{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+}
+@media (min-width:1100px){
+  .cards,.clist{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .presets{grid-template-columns:repeat(6,minmax(0,1fr))}
+  .sheets{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .tiles{gap:14px}
+  /* tela inicial em duas colunas */
+  main.v-inicio{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);column-gap:28px;align-content:start}
+  main.v-inicio>*{grid-column:2}
+  main.v-inicio>.intro{grid-column:1;grid-row:1 / span 12;align-self:start;position:sticky;top:24px;padding:48px 36px 40px}
+  main.v-inicio>.intro .intro-logo img{max-width:440px}
+  main.v-inicio>.os-main{margin-top:max(14px,env(safe-area-inset-top,0px))}
+  main.v-inicio>.intro-f{grid-column:1 / -1}
+  /* aba Móvel: desenho à esquerda, ajustes à direita */
+  #corpo.mv{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);column-gap:22px;align-items:start}
+  #corpo.mv>*{grid-column:2;min-width:0}
+  #corpo.mv>.show{grid-column:1;grid-row:1 / span 30;position:sticky;top:150px;margin-top:0}
+  #corpo.mv>:nth-child(2){margin-top:0}
+  #corpo.mv .card+.card{margin-top:12px}
+  /* aba Cliente: cartões lado a lado */
+  main.a-resumo #corpo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+  main.a-resumo #corpo .card+.card{margin-top:0}
+  main.a-resumo #corpo>.danger-zone{grid-column:1 / -1}
+  /* lista de OS: cartões de nuvem e backup lado a lado */
+  main.v-lista{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:16px;align-content:start}
+  main.v-lista>*{grid-column:1 / -1}
+  main.v-lista>.nuvem,main.v-lista>.backup{grid-column:auto;align-self:stretch}
+}
 </style>
 </head>
 <body>
@@ -813,7 +849,7 @@ function render(){
   else if(S.view==="clientes")html=vClientes();
   else if(S.view==="projeto"&&S.projetos.has(S.atual))html=vProjeto();
   else{S.view="lista";html=vLista();}
-  app.innerHTML=html;
+  app.innerHTML=html;app.className="v-"+S.view+(S.view==="projeto"?" a-"+S.aba:"");
   atualizarCalc();
   if(S.view==="projeto"&&S.aba==="movel"&&S.vista!=="frente")montar3D();else liberar3D();
 }
@@ -932,7 +968,7 @@ function vProjeto(){
     <div class="stepper" role="group" aria-label="Etapa do projeto">${STATUS.map((s,i)=>`<button class="step ${i<si?"done":i===si?"cur":""}" data-status="${s}" aria-pressed="${i===si}"><span class="dot">${i<si?icon("check",12):""}</span>${s}</button>`).join("")}</div>
   </section>
   <div class="ptabs"><div class="seg" role="tablist">${abas.map(([k,t,ic,n])=>`<button role="tab" data-aba="${k}" aria-selected="${S.aba===k}">${icon(ic,17)}${t}${n?`<span class="cnt">${n}</span>`:""}</button>`).join("")}</div></div>
-  <div id="corpo">${corpo}</div>${fab}`;
+  <div id="corpo" class="${S.aba==="movel"&&p.movel?"mv":""}">${corpo}</div>${fab}`;
 }
 
 function tResumo(p){
@@ -2249,7 +2285,7 @@ function montar3D(){
   if(!box||!p||!p.movel)return;
   if(!window.THREE||!temWebGL()){box.innerHTML=`<p class="muted" style="padding:20px;text-align:center">A visualização 3D não abriu neste aparelho. Use a vista de frente.</p>`;return;}
   const r=modelo(p.movel);
-  const w=box.clientWidth||340,h=Math.round(Math.min(440,Math.max(260,w*0.78)));
+  const w=box.clientWidth||340,h=Math.round(Math.min(w>700?Math.min(620,window.innerHeight-260):440,Math.max(260,w*0.78)));
   const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});
   renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1));renderer.setSize(w,h);
   box.innerHTML="";box.appendChild(renderer.domElement);
