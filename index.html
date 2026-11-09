@@ -425,6 +425,14 @@ button.brand{border:0;background:none;padding:0;display:flex;align-items:center;
 .prox-i{display:grid;grid-template-columns:1fr auto;grid-template-areas:"os chip" "n chip" "c chip";align-items:center;text-align:left;border:0;background:var(--surface);border-radius:var(--r-md);padding:12px 14px;box-shadow:var(--shadow);color:var(--ink);cursor:pointer}
 .prox-i .os-mini{grid-area:os}.prox-i b{grid-area:n;font-size:16px}.prox-i .m{grid-area:c;font-size:13.5px;color:var(--muted)}.prox-i>:last-child{grid-area:chip}
 .intro-f{text-align:center;color:var(--muted);font-size:12.5px;margin:22px 0 4px;letter-spacing:.3px}
+.pecas-cor>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;font-weight:800;font-size:16px}
+.pecas-cor>summary::-webkit-details-marker{display:none}
+.pecas-cor>summary>span{display:flex;align-items:center;gap:8px}.pecas-cor>summary .ic{color:var(--tape)}
+.pecas-cor>summary small{font-size:12.5px;font-weight:600;color:var(--muted);text-align:right}
+.pc-lista{display:grid;gap:8px;margin-top:12px}
+.pc-row{display:flex;align-items:center;gap:10px;background:var(--surface-2);border-radius:var(--r-md);padding:6px 8px 6px 6px}
+.pc-row .pad-sw{width:40px;height:40px}
+.pc-row .pad-t b{font-size:14.5px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .three .in{padding:11px 30px 11px 10px}
 .three .unit span{right:8px;font-size:12px}
@@ -2057,10 +2065,25 @@ function limparChapas(p){const usa=new Set(p.pecas.map(x=>x.material));
   if(!p.chapas.length)p.chapas=[{id:uid(),nome:"MDF Branco 15mm",comp:2750,larg:1840}];}
 function coresMv(m,k,t){const pd=padraoDe(m,k);const th=thumbPadrao(pd);
   return `<div class="f">${t}<button type="button" class="pad-btn" data-padrao="${k}"><span class="pad-sw" style="background:${pd.cor}${th?` url(${th}) center/cover`:""}"></span><span class="pad-t"><b>${esc(pd.nome)}</b><small>${esc(pd.grupo)}</small></span><span class="pad-go">Trocar</span></button></div>`;}
+/* ---------- cor de cada peça ---------- */
+const CAT_SEM_COR=new Set(["parede","puxador","colchao","gaveta","fundo"]);
+function grupoPecas(m){const r=modelo(m),vis=new Map();
+  r.parts.forEach(pt=>{if(CAT_SEM_COR.has(pt.cat)||/^(TV|Cava|Parede)$/.test(pt.nome))return;if(!vis.has(pt.nome))vis.set(pt.nome,pt);});return [...vis.values()];}
+function corPecaKey(m,nome){const cp=m.coresPecas||{};if(cp[nome])return nome;let best="";Object.keys(cp).forEach(k=>{const a=nome.toLowerCase(),b=k.toLowerCase();if((a===b||a.startsWith(b+" ")||a.startsWith(b+"("))&&k.length>best.length)best=k;});return best;}
+function padPeca(m,nome){const k=corPecaKey(m,nome);return k&&PAD[m.coresPecas[k]]?PAD[m.coresPecas[k]]:null;}
+function padPadraoPeca(m,pt){return padraoDe(m,(pt.cat==="porta"||pt.cat==="frente")?"corFrente":"corCaixa");}
+function coresPorPeca(m){const g=grupoPecas(m);if(g.length<2)return "";const n=Object.keys(m.coresPecas||{}).length;
+  return `<details class="card section-gap pecas-cor" ${S.corPecaAberto?"open":""}><summary><span>${icon("sliders",18)}Cor de cada peça</span><small>${n?`${n} peça${n>1?"s":""} com cor própria`:"Todas no padrão do móvel"}</small></summary>
+    <div class="pc-lista">${g.map(pt=>{const own=padPeca(m,pt.nome),pd=own||padPadraoPeca(m,pt),th=thumbPadrao(pd);
+      return `<div class="pc-row"><span class="pad-sw" style="background:${pd.cor}${th?` url(${th}) center/cover`:""}"></span>
+        <span class="pad-t"><b>${esc(pt.nome)}</b><small>${esc(pd.nome)}${own?"":" · padrão do móvel"}</small></span>
+        ${own?`<button type="button" class="btn sm" data-pecareset="${esc(pt.nome)}" aria-label="Voltar ${esc(pt.nome)} ao padrão do móvel">Padrão</button>`:""}
+        <button type="button" class="btn sm" data-padrao="peca:${esc(pt.nome)}">Trocar</button></div>`;}).join("")}</div>
+    ${n?`<button type="button" class="btn wide section-gap" data-pecareset="*">Voltar todas ao padrão do móvel</button>`:""}</details>`;}
 function dlgPadrao(k){
-  const p=S.projetos.get(S.atual);if(!p||!p.movel)return;const m=p.movel;const atual=padraoDe(m,k);S.padK=k;const g=S.padGrp||"Todos";
+  const p=S.projetos.get(S.atual);if(!p||!p.movel)return;const m=p.movel;const ehPeca=k.startsWith("peca:"),nomeP=ehPeca?k.slice(5):"";const atual=ehPeca?(padPeca(m,nomeP)||padraoDe(m,/^(Porta|Frente|Ripa)/.test(nomeP)?"corFrente":"corCaixa")):padraoDe(m,k);S.padK=k;const g=S.padGrp||"Todos";
   const lista=PADROES.filter(x=>g==="Todos"||x.grupo===g);
-  const alvo=k==="corFrente"?"portas e frentes":"caixa (ou peça inteira)";
+  const alvo=ehPeca?`só a peça “${esc(nomeP)}”`:k==="corFrente"?"portas e frentes":"caixa (ou peça inteira)";
   abrirDlg(`${cab("Padrão do MDF")}
     <p class="as-note" style="margin:0 0 10px;color:var(--muted)">Para: <b style="color:var(--ink)">${alvo}</b>. Os padrões <b style="color:var(--ink)">Fibraplac</b> usam a amostra do catálogo oficial; os outros são referências gerais. Confira sempre a chapa na loja.</p>
     <div class="chips" style="margin-bottom:10px">${["Todos",...GRUPOS_PAD].map(x=>`<button type="button" class="chip" data-padgrp="${x}" aria-pressed="${g===x}">${x}</button>`).join("")}</div>
@@ -2068,7 +2091,8 @@ function dlgPadrao(k){
 }
 function aplicarPadrao(id){
   const p=S.projetos.get(S.atual);if(!p||!p.movel||!PAD[id])return;const m=p.movel,k=S.padK||"corCaixa",pd=PAD[id];
-  if(k==="corCaixa"){const antes=m.acabCaixa||"";if(!m.acabFrente||m.acabFrente===antes||m.corFrente===m.corCaixa){m.acabFrente=id;m.corFrente=pd.cor;}m.acabCaixa=id;m.corCaixa=pd.cor;}
+  if(k.startsWith("peca:")){m.coresPecas=Object.assign({},m.coresPecas,{[k.slice(5)]:id});S.corPecaAberto=true;}
+  else if(k==="corCaixa"){const antes=m.acabCaixa||"";if(!m.acabFrente||m.acabFrente===antes||m.corFrente===m.corCaixa){m.acabFrente=id;m.corFrente=pd.cor;}m.acabCaixa=id;m.corCaixa=pd.cor;}
   else{m.acabFrente=id;m.corFrente=pd.cor;}
   aplicarMovel(p);salvar(S.atual);fecharDlg();redesenhar();toast(`${pd.nome} aplicado.`);
 }
@@ -2136,7 +2160,7 @@ function aplicarMovel(p){
   const temFundo=r.lista.some(x=>x.fundo);const idFundo=temFundo?chapaFundo(p):null;
   const manuais=p.pecas.filter(x=>!(x.origem==="movel"&&x.movelId===p.movel.id));
   const geradas=r.lista.map(x=>{const f={c1:false,c2:false,l1:false,l2:false};["c1","c2","l1","l2"].forEach(k=>{if(x.fita.includes(k))f[k]=true});
-    return {id:uid(),nome:x.nome,qtd:x.qtd,comp:x.comp,larg:x.larg,material:x.fundo?idFundo:(/^(Porta|Frente|Ripa)/.test(x.nome)?idFrente:principal),veio:false,fita:f,origem:"movel",movelId:p.movel.id,curva:x.curva||"",curvaMm:x.curvaMm||0};});
+    return {id:uid(),nome:x.nome,qtd:x.qtd,comp:x.comp,larg:x.larg,material:x.fundo?idFundo:(padPeca(mv,x.nome)?chapaPadrao(p,padPeca(mv,x.nome).chapa||padPeca(mv,x.nome).nome,espM):(/^(Porta|Frente|Ripa)/.test(x.nome)?idFrente:principal)),veio:false,fita:f,origem:"movel",movelId:p.movel.id,curva:x.curva||"",curvaMm:x.curvaMm||0};});
   p.pecas=[...geradas,...manuais];
   limparChapas(p);
   if(!p.nome.trim())p.nome=descricaoMovel(p.movel).titulo;
@@ -2249,7 +2273,9 @@ function montarCena(r,m,dentro){
   mats.frente=mats.porta;
   const lineMat=new THREE.LineBasicMaterial({color:0x1d2125,transparent:true,opacity:.35});
   const pdC=m.acabCaixa&&PAD[m.acabCaixa],pdF=m.acabFrente&&PAD[m.acabFrente];
-  const matDe=pt=>{const base=mats[pt.cat]||mats.caixa;const pd=pt.cat==="caixa"?pdC:(pt.cat==="porta"||pt.cat==="frente")?pdF:null;return pd&&pd.tipo!=="uni"?materialPadrao(pd,pt,base):base;};
+  const matDe=pt=>{const base=mats[pt.cat]||mats.caixa;const own=CAT_SEM_COR.has(pt.cat)?null:padPeca(m,pt.nome);
+    if(own){if(own.tipo!=="uni")return materialPadrao(own,pt,base);const mm=base.clone();mm.color=corHex(own.cor);return mm;}
+    const pd=pt.cat==="caixa"?pdC:(pt.cat==="porta"||pt.cat==="frente")?pdF:null;return pd&&pd.tipo!=="uni"?materialPadrao(pd,pt,base):base;};
   r.parts.forEach(pt=>{
     if(pt.cat==="gaveta"&&!dentro)return;
     if(pt.forma){
@@ -2325,7 +2351,7 @@ function vistaFrente(m,dentro){
   const cor={caixa:m.corCaixa,fundo:"#D8CFBD",porta:m.corFrente,frente:m.corFrente,puxador:"#2A2C2E",gaveta:"#E2D6BF",parede:"#ECEAE4",metal:m.corMetal||"#C9A24A",colchao:"#F2EFE8",sombra:"#2B1E16"};
   const ps=r.parts.filter(p=>!(dentro&&(p.cat==="porta"||p.cat==="frente"||p.cat==="puxador"))&&!(p.cat==="gaveta"&&!dentro)).sort((a,b)=>(a.z+a.d)-(b.z+b.d));
   const sw=Math.max(W,H)*0.0028;
-  const rects=ps.map(p=>`<rect x="${p.x}" y="${H-p.y-p.h}" width="${p.w}" height="${p.h}" fill="${cor[p.cat]||m.corCaixa}" stroke="#1D2125" stroke-width="${p.cat==="puxador"?0:sw}" ${p.cat==="puxador"?'rx="4"':""}/>`).join("");
+  const rects=ps.map(p=>`<rect x="${p.x}" y="${H-p.y-p.h}" width="${p.w}" height="${p.h}" fill="${(!CAT_SEM_COR.has(p.cat)&&padPeca(m,p.nome)||{}).cor||cor[p.cat]||m.corCaixa}" stroke="#1D2125" stroke-width="${p.cat==="puxador"?0:sw}" ${p.cat==="puxador"?'rx="4"':""}/>`).join("");
   const cy=H+pad*0.55,dx=-pad*0.55,ff='font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="600"';
   let dimH=`<g stroke="var(--muted)" stroke-width="${sw}" fill="var(--muted)"><line x1="${dw.x0}" y1="${cy}" x2="${dw.x1}" y2="${cy}"/><line x1="${dw.x0}" y1="${cy-pad*0.2}" x2="${dw.x0}" y2="${cy+pad*0.2}"/><line x1="${dw.x1}" y1="${cy-pad*0.2}" x2="${dw.x1}" y2="${cy+pad*0.2}"/>
     <text x="${(dw.x0+dw.x1)/2}" y="${cy+fs*1.25}" text-anchor="middle" font-size="${fs}" stroke="none" ${ff}>${dw.label}</text>`;
@@ -2365,6 +2391,7 @@ function vMovel(p){
     <button class="btn tape wide section-gap" data-act="mvSalvar">${icon("plus",18)}Salvar e adicionar outro móvel</button>
   </section>
   ${({cama:ajustesCama,painel:ajustesPainel,hometheater:ajustesHomeTheater,prateleira:ajustesPrateleira,canto:ajustesCanto,tampo:ajustesTampo,suspensa:ajustesSuspensa,escrivaninha:ajustesEscrivaninha,mesa:ajustesMesa}[m.tipo]||ajustesCaixa)(m)}
+  ${coresPorPeca(m)}
   <div class="section-gap">${box}</div>
 
   ${ferr.length?`<section class="card"><h3>${icon("cart",18)}Ferragens sugeridas</h3><ul class="ferr">${ferr.map(([n,q])=>`<li><span>${esc(n)}</span><b class="m">${q}</b></li>`).join("")}</ul>
@@ -2591,7 +2618,7 @@ function gerarPDF(p,tipo){
       const rgb=h=>{h=String(h||"#F3F1EB").replace("#","");return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];};
       const cor={caixa:MV.corCaixa,fundo:"#D8CFBD",porta:MV.corFrente,frente:MV.corFrente,puxador:"#2A2C2E",parede:"#ECEAE4",metal:MV.corMetal||"#C9A24A",colchao:"#F2EFE8",sombra:"#2B1E16"};
       r.parts.filter(q=>q.cat!=="gaveta").sort((a,b)=>(a.z+a.d)-(b.z+b.d)).forEach(q=>{
-        doc.setFillColor(...rgb(cor[q.cat]||MV.corCaixa));doc.setDrawColor(...ink);doc.setLineWidth(q.cat==="puxador"?0:0.2);
+        doc.setFillColor(...rgb((!CAT_SEM_COR.has(q.cat)&&padPeca(MV,q.nome)||{}).cor||cor[q.cat]||MV.corCaixa));doc.setDrawColor(...ink);doc.setLineWidth(q.cat==="puxador"?0:0.2);
         doc.rect(ox+q.x*sc,oy+(r.H-q.y-q.h)*sc,Math.max(0.3,q.w*sc),Math.max(0.3,q.h*sc),q.cat==="puxador"?"F":"FD");});
       doc.setDrawColor(...muted);doc.setLineWidth(0.2);doc.setFontSize(8);doc.setTextColor(...muted);doc.setFont("helvetica","normal");
       const dw=r.dimW||{x0:0,x1:r.W,label:`${r.W} mm`},dh=r.dimH===undefined?{y0:0,y1:r.H,label:`${r.H} mm`}:r.dimH;
@@ -2809,6 +2836,7 @@ document.addEventListener("click",e=>{
   if(b.dataset.tipo&&p&&p.movel){const o=p.movel;const m=novoMovel(b.dataset.tipo,p);m.corCaixa=o.corCaixa;m.corFrente=o.corFrente;m.esp=o.esp;m.id=o.id;p.movel=m;aplicarMovel(p);salvar(S.atual);redesenhar();return;}
   if(b.dataset.mvs&&p&&p.movel){const k=b.dataset.mvs;const lim=(p.movel.tipo==="escrivaninha"&&k==="gavetas")?3:(p.movel.tipo==="suspensa"&&k==="prateleiras")?5:{portas:8,gavetas:12,prateleiras:20,divisoes:8,qtd:200}[k];p.movel[k]=Math.max(k==="qtd"?1:0,Math.min(lim,(p.movel[k]||0)+Number(b.dataset.dd)));aplicarMovel(p);salvar(S.atual);redesenhar();return;}
   if(b.dataset.padrao&&p&&p.movel){dlgPadrao(b.dataset.padrao);return;}
+  if(b.dataset.pecareset&&p&&p.movel){const n=b.dataset.pecareset;if(n==="*")p.movel.coresPecas={};else{const cp=Object.assign({},p.movel.coresPecas);delete cp[n];p.movel.coresPecas=cp;}S.corPecaAberto=true;aplicarMovel(p);salvar(S.atual);redesenhar();toast("Peça voltou ao padrão do móvel.");return;}
   if(b.dataset.padgrp){S.padGrp=b.dataset.padgrp;const st=dlgC.scrollTop;dlgPadrao(S.padK);dlgC.scrollTop=0;return;}
   if(b.dataset.setpad){aplicarPadrao(b.dataset.setpad);return;}
   if(b.dataset.cor&&p&&p.movel){p.movel[b.dataset.cor]=b.dataset.c;salvar(S.atual);app.querySelectorAll(`[data-cor="${b.dataset.cor}"]`).forEach(x=>x.setAttribute("aria-pressed",x.dataset.c===b.dataset.c));atualizarVista();return;}
@@ -2844,6 +2872,7 @@ document.addEventListener("click",e=>{
 let _rw=window.innerWidth,_rwt=null;window.addEventListener("resize",()=>{clearTimeout(_rwt);_rwt=setTimeout(()=>{if(Math.abs(window.innerWidth-_rw)>40&&S.view==="projeto"&&S.aba==="movel"&&S.vista!=="frente"){_rw=window.innerWidth;montar3D();}},250);});
 window.addEventListener("pagehide",()=>{Object.keys(timers).forEach(flushNow)});
 document.addEventListener("toggle",e=>{if(e.target.matches&&e.target.matches("details.mais"))S.mais=e.target.open;},true);
+document.addEventListener("toggle",e=>{if(e.target.matches&&e.target.matches("details.pecas-cor"))S.corPecaAberto=e.target.open;},true);
 document.addEventListener("change",e=>{if(e.target.id==="backup-in"&&e.target.files&&e.target.files[0])backupRestaurar(e.target.files[0]);});
 if("serviceWorker" in navigator&&(/github\.io$/.test(location.hostname)||location.hostname==="localhost")){try{navigator.serviceWorker.register("sw.js").catch(()=>{});}catch(e){}}
 iniciar();
