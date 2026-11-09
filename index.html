@@ -1141,7 +1141,7 @@ function dlgExportar(){
   const p=S.projetos.get(S.atual);
   abrirDlg(`${cab("Exportar projeto")}
     <button class="choice main" data-act="enviar"><span class="ico">${icon("send",20)}</span><span><b>Enviar para o cliente</b><span class="d">PDF, WhatsApp ou e-mail.</span></span></button>
-    <button class="choice main" data-pdf="cliente"><span class="ico">${icon("pdf",20)}</span><span><b>PDF para o cliente</b><span class="d">Desenho, peças com medidas e prazo${(p.mostrarValor!==false)?", valor e pagamentos":""}. Sem seus custos.</span></span></button>
+    <button class="choice main" data-pdf="cliente"><span class="ico">${icon("pdf",20)}</span><span><b>PDF para o cliente</b><span class="d">Desenho do projeto com as medidas${(p.mostrarValor!==false)?" e o valor do orçamento":""}. Sem lista de peças nem seus custos.</span></span></button>
     <button class="choice main" data-pdf="oficina"><span class="ico">${icon("pdf",20)}</span><span><b>PDF completo da oficina</b><span class="d">Tudo, com plano de corte desenhado, materiais, custo e sobra.</span></span></button>
     <button class="choice" data-txt="corte"><span class="ico">${icon("copy",20)}</span><span><b>Copiar lista de corte</b><span class="d">Texto para o WhatsApp da loja que corta as chapas.</span></span></button>
     ${p.materiais.length?`<button class="choice" data-txt="mat"><span class="ico">${icon("copy",20)}</span><span><b>Copiar lista de compras</b><span class="d">Materiais com quantidades e preços.</span></span></button>`:""}`,"exp");
@@ -2074,7 +2074,7 @@ function dlgEnviar(){
   abrirDlg(`${cab("Enviar para o cliente")}
     <p class="as-note" style="margin:0 0 12px;color:var(--muted)">${todosMoveis(p).length} móve${todosMoveis(p).length===1?"l":"is"} no projeto. O cliente não vê seus custos.</p>
     <label class="switch" style="margin-bottom:12px"><span class="txt"><b>Incluir o valor</b><span>${(p.mostrarValor!==false)?((Number(p.valor)||0)>0?`O orçamento vai com o valor de ${brl(p.valor)}.`:"Ligado, mas o valor está vazio: preencha em Cliente → Valor cobrado."):"Desligado: vai só o projeto, sem preço."}</span></span><input type="checkbox" data-envvalor ${(p.mostrarValor!==false)?"checked":""}></label>
-    <button class="choice main" data-act="enviarPDF"><span class="ico">${icon("pdf",20)}</span><span><b>Enviar o PDF</b><span class="d">Com o desenho de cada móvel, medidas e prazo${(p.mostrarValor!==false)?", com o valor":""}. No celular abre a lista para escolher o WhatsApp.</span></span></button>
+    <button class="choice main" data-act="enviarPDF"><span class="ico">${icon("pdf",20)}</span><span><b>Enviar o PDF</b><span class="d">Desenho de cada móvel com as medidas${(p.mostrarValor!==false)?" e o valor do orçamento":""}. No celular abre a lista para escolher o WhatsApp.</span></span></button>
     <a class="choice" href="${waHref}" target="_blank" rel="noopener"><span class="ico">${icon("phone",20)}</span><span><b>Mandar resumo no WhatsApp</b><span class="d">${wa?`Para ${esc(p.telefone)}.`:"Sem número cadastrado: você escolhe o contato."}</span></span></a>
     <a class="choice" href="${mail}" target="_blank" rel="noopener"><span class="ico">${icon("mail",20)}</span><span><b>Mandar por e-mail</b><span class="d">Abre seu e-mail com o resumo pronto.</span></span></a>
     <button class="choice" data-act="copiarResumo"><span class="ico">${icon("copy",20)}</span><span><b>Ver e copiar o resumo</b><span class="d">Para colar onde quiser.</span></span></button>`,"env");
@@ -2569,7 +2569,7 @@ function gerarPDF(p,tipo){
   });
 
   const pcs=p.pecas.filter(x=>x.qtd&&x.comp&&x.larg);
-  if(pcs.length){
+  if(pcs.length&&tipo!=="cliente"){
     titulo(_mvs.length>1?"Peças dos móveis":"Peças do móvel");
     const varias=p.chapas.length>1;
     if(tipo==="cliente"){
