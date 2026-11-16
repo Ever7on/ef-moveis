@@ -147,6 +147,9 @@ main{max-width:880px;margin:0 auto;padding:0 16px 120px}
 .client-line .nm{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .client-line .sub{font-size:14px;color:var(--muted)}
 .wa{width:40px;height:40px;border-radius:50%;background:var(--ok-soft);color:var(--ok);display:grid;place-items:center;flex:none}
+.aviso-et{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);font-size:13px;color:var(--muted)}
+.aviso-et .ok{display:inline-flex;align-items:center;gap:5px;color:var(--ok);font-weight:600}
+.aviso-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 13px;border-radius:999px;background:var(--ok-soft);color:var(--ok);font-weight:700;font-size:13px;text-decoration:none;flex:none}
 .stepper{display:grid;grid-template-columns:repeat(5,1fr);margin-top:16px}
 .step{position:relative;border:0;background:transparent;display:flex;flex-direction:column;align-items:center;gap:6px;padding:0 2px;font-size:12px;font-weight:600;color:var(--muted);line-height:1.15;text-align:center}
 .step::before{content:"";position:absolute;top:9px;right:50%;width:100%;height:3px;background:var(--line);z-index:0}
@@ -835,6 +838,18 @@ function dueChip(p){
   return `<span class="due ${d<=7?"soon":""}">Em ${d} dias</span>`;
 }
 const iniciais=n=>(n||"?").trim().split(/\s+/).slice(0,2).map(x=>x[0]).join("").toUpperCase()||"?";
+function textoEtapa(p){const st=p.status||"Orçamento",si=STATUS.indexOf(st),nome=String(p.cliente||"").trim().split(/\s+/)[0];
+  const msg={"Orçamento":"Seu orçamento está pronto. Qualquer dúvida, é só me chamar.","Aprovado":"Recebemos a sua aprovação. Obrigado pela confiança! Em breve começamos a produção.",
+    "Em produção":"Seus móveis já estão sendo produzidos.","Montagem":"Os móveis estão prontos e vamos para a montagem.","Entregue":"Tudo entregue! Obrigado pela confiança. Se puder, mande uma foto do ambiente pronto."}[st]||"";
+  const L=[`Olá${nome?", "+nome:""}! Aqui é da *E.F Móveis e Planejados*.`,"",`Atualização do seu pedido *${fmtOS(p.os)}*${p.nome?` (${p.nome})`:""}:`,""];
+  STATUS.forEach((x,i)=>L.push(i<si?`✅ ${x}`:i===si?`👉 *${x}*`:`▫️ ${x}`));
+  L.push("",msg);
+  if(p.prazo&&si>=1&&si<=3)L.push(`Previsão de entrega: ${fmtData(p.prazo)}.`);
+  return L.join("\n");}
+function hrefEtapa(p){return (waLink(p.telefone)||"https://wa.me/")+"?text="+encodeURIComponent(textoEtapa(p));}
+function avisoEtapa(p){const st=p.status||"Orçamento",av=p.avisos&&p.avisos[st];
+  return `<div class="aviso-et">${av?`<span class="ok">${icon("check",14)}Avisado em ${fmtData(av).slice(0,5)}</span>`:`<span>Etapa: <b>${esc(st)}</b></span>`}
+    <a class="aviso-btn" href="${hrefEtapa(p)}" target="_blank" rel="noopener" data-avisou="${esc(st)}">${icon("phone",16)}${av?"Avisar de novo":"Avisar o cliente"}</a></div>`;}
 function waLink(t){const tel=String(t||"").replace(/\D/g,"");if(tel.length<8)return "";return "https://wa.me/"+(tel.length<=11?"55"+tel:tel);}
 function mini(pc,box=40){
   const c=Number(pc.comp)||1,l=Number(pc.larg)||1,sc=box/Math.max(c,l),w=Math.max(6,c*sc),h=Math.max(6,l*sc),x=(box-w)/2,y=(box-h)/2,f=pc.fita||{};
@@ -974,6 +989,7 @@ function vProjeto(){
       <div class="who"><div class="nm">${esc(p.cliente||"Cliente não informado")}</div><div class="sub">${p.prazo?`Entrega ${fmtData(p.prazo)}`:"Sem data de entrega"}</div></div>
       ${dueChip(p)}${wa?`<a class="wa" href="${wa}" target="_blank" rel="noopener" aria-label="Abrir WhatsApp do cliente">${icon("phone",18)}</a>`:""}</div>
     <div class="stepper" role="group" aria-label="Etapa do projeto">${STATUS.map((s,i)=>`<button class="step ${i<si?"done":i===si?"cur":""}" data-status="${s}" aria-pressed="${i===si}"><span class="dot">${i<si?icon("check",12):""}</span>${s}</button>`).join("")}</div>
+    ${avisoEtapa(p)}
   </section>
   <div class="ptabs"><div class="seg" role="tablist">${abas.map(([k,t,ic,n])=>`<button role="tab" data-aba="${k}" aria-selected="${S.aba===k}">${icon(ic,17)}${t}${n?`<span class="cnt">${n}</span>`:""}</button>`).join("")}</div></div>
   <div id="corpo" class="${S.aba==="movel"&&p.movel?"mv":""}">${corpo}</div>${fab}`;
@@ -2263,6 +2279,7 @@ function dlgEnviar(){
     <p class="as-note" style="margin:0 0 12px;color:var(--muted)">${todosMoveis(p).length} móve${todosMoveis(p).length===1?"l":"is"} no projeto. O cliente não vê seus custos.</p>
     <label class="switch" style="margin-bottom:12px"><span class="txt"><b>Incluir o valor</b><span>${(p.mostrarValor!==false)?((Number(p.valor)||0)>0?`O orçamento vai com o valor de ${brl(p.valor)}.`:"Ligado, mas o valor está vazio: preencha em Cliente → Valor cobrado."):"Desligado: vai só o projeto, sem preço."}</span></span><input type="checkbox" data-envvalor ${(p.mostrarValor!==false)?"checked":""}></label>
     <button class="choice main" data-act="enviarPDF"><span class="ico">${icon("pdf",20)}</span><span><b>Enviar o PDF</b><span class="d">Desenho de cada móvel com as medidas${(p.mostrarValor!==false)?" e o valor do orçamento":""}. No celular abre a lista para escolher o WhatsApp.</span></span></button>
+    <a class="choice" href="${hrefEtapa(p)}" target="_blank" rel="noopener" data-avisou="${esc(p.status||"Orçamento")}"><span class="ico">${icon("check",20)}</span><span><b>Avisar a etapa no WhatsApp</b><span class="d">Mostra em que passo o pedido está: ${esc(p.status||"Orçamento")}.</span></span></a>
     <a class="choice" href="${waHref}" target="_blank" rel="noopener"><span class="ico">${icon("phone",20)}</span><span><b>Mandar resumo no WhatsApp</b><span class="d">${wa?`Para ${esc(p.telefone)}.`:"Sem número cadastrado: você escolhe o contato."}</span></span></a>
     <a class="choice" href="${mail}" target="_blank" rel="noopener"><span class="ico">${icon("mail",20)}</span><span><b>Mandar por e-mail</b><span class="d">Abre seu e-mail com o resumo pronto.</span></span></a>
     <button class="choice" data-act="copiarResumo"><span class="ico">${icon("copy",20)}</span><span><b>Ver e copiar o resumo</b><span class="d">Para colar onde quiser.</span></span></button>`,"env");
@@ -2956,13 +2973,14 @@ function acao(a){
   }
 }
 document.addEventListener("click",e=>{
+  const av=e.target.closest("[data-avisou]");if(av){const p0=S.projetos.get(S.atual);if(p0){p0.avisos=p0.avisos||{};p0.avisos[av.dataset.avisou]=new Date().toISOString().slice(0,10);salvar(S.atual);setTimeout(()=>{const h=app.querySelector(".aviso-et");if(h)h.outerHTML=avisoEtapa(p0);},400);}return;}
   const b=e.target.closest("button");if(!b)return;
   const p=S.projetos.get(S.atual);
   if(b.dataset.nav){S.view=b.dataset.nav;render();window.scrollTo(0,0);return;}
   if(b.dataset.filtro){S.filtro=b.dataset.filtro;render();return;}
   if(b.dataset.abrir){abrir(b.dataset.abrir);return;}
   if(b.dataset.aba){S.aba=b.dataset.aba;S.confirmDel=false;const y=Math.min(window.scrollY,app.querySelector(".ptabs")?app.querySelector(".ptabs").offsetTop-60:0);render();window.scrollTo(0,Math.max(0,y));return;}
-  if(b.dataset.status&&p){p.status=b.dataset.status;salvar(S.atual);redesenhar();return;}
+  if(b.dataset.status&&p){const mudou=p.status!==b.dataset.status;p.status=b.dataset.status;salvar(S.atual);redesenhar();if(mudou&&!(p.avisos&&p.avisos[p.status]))toast("Toque em “Avisar o cliente” para mandar no WhatsApp");return;}
   if(b.dataset.peca){abrirPeca(b.dataset.peca);return;}
   if(b.dataset.preset&&p){p.movel=novoMovel(b.dataset.preset,p);aplicarMovel(p);salvar(S.atual);S.vista="3d";render();window.scrollTo(0,0);return;}
   if(b.dataset.tipo&&p&&p.movel){const o=p.movel;const m=novoMovel(b.dataset.tipo,p);m.corCaixa=o.corCaixa;m.corFrente=o.corFrente;m.esp=o.esp;m.id=o.id;p.movel=m;aplicarMovel(p);salvar(S.atual);redesenhar();return;}
