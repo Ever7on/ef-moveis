@@ -1363,6 +1363,8 @@ const TIPOS_MOVEL={
   cama:{nome:"Cama",larg:1380,alt:350,prof:1880,cabAlt:1000,bau:false,portas:0,prateleiras:0,gavetas:0,divisoes:0,fundo:false,rodape:false,rodapeAlt:0},
   hometheater:{nome:"Painel com rack",larg:2000,alt:2200,prof:400,painelLarg:1900,painelAlt:2030,painelChao:170,rackAlt:450,peAlt:170,ripaLarg:30,ripaVao:15,prateleira:true,pratProf:250,pratDist:380,frente:"basculante",cava:true,prateleiraRack:true,tv:true,portas:3,prateleiras:0,gavetas:0,divisoes:0,fundo:true,rodape:false,rodapeAlt:0},
   painel:{nome:"Painel de TV",larg:1800,alt:1100,prof:18,altChao:600,ripado:false,ripaLarg:40,ripaVao:15,fundoPainel:true,nicho:false,nichoProf:250,tv:true,portas:0,prateleiras:0,gavetas:0,divisoes:0,fundo:false,rodape:false,rodapeAlt:0},
+  piabanheiro:{nome:"Gabinete sob a pia",larg:980,alt:700,prof:500,esp:15,espFrente:18,nichoLarg:135,nichoPrat:1,gavetaoAlt:320,rodapeAlt:60,rodapeRecuo:60,fundoNicho:true,portas:0,prateleiras:0,gavetas:0,divisoes:0,fundo:false,rodape:false},
+  piacozinha:{nome:"Balcão sob a pia",larg:1410,alt:665,prof:500,esp:15,espFrente:18,gavLarg:420,gavetas:3,portas:2,prateleira:true,pratDoTopo:300,vaoChao:75,moldura:true,prateleiras:0,divisoes:0,fundo:false,rodape:false,rodapeAlt:0},
   aereo:{nome:"Armário aéreo",larg:1200,alt:700,prof:350,portas:3,prateleiras:1,gavetas:0,divisoes:0,fundo:true,rodape:false,rodapeAlt:80}
 };
 const CORES=[["Branco","#F3F1EB"],["Off-white","#E7DFCF"],["Cinza","#9A9EA2"],["Grafite","#4A4D51"],["Preto","#252628"],["Carvalho","#C99D68"],["Freijó","#A87E4C"],["Nogueira","#76513A"],["Verde","#5F7B66"],["Azul","#41607F"]];
@@ -1689,11 +1691,12 @@ const CATALOGO={
   sapateira:{nome:"Sapateira",base:"armario",grupo:"Quarto",larg:800,alt:1200,prof:350,portas:2,prateleiras:5,gavetas:0,rodape:true,rodapeAlt:80},
   penteadeira:{nome:"Penteadeira",base:"escrivaninha",grupo:"Quarto",larg:1000,alt:760,prof:450,gavetas:2,painel:false,
     extras:(m,r)=>r.ferragens.push(["Espelho (vidraçaria)",1])},
-  balcao:{nome:"Balcão de cozinha",grupo:"Cozinha"},aereo:{grupo:"Cozinha"},
+  balcao:{nome:"Balcão de cozinha",grupo:"Cozinha"},piacozinha:{nome:"Balcão sob a pia",grupo:"Cozinha",acabCaixa:"fb_saara",corCaixa:"#D0C7BE",acabFrente:"fb_saara",corFrente:"#D0C7BE"},aereo:{grupo:"Cozinha"},
   paneleiro:{nome:"Paneleiro",base:"armario",grupo:"Cozinha",larg:600,alt:2200,prof:550,portas:2,prateleiras:4,gavetas:0,rodape:true,rodapeAlt:100},
   torrequente:{nome:"Torre quente",base:"armario",grupo:"Cozinha",larg:700,alt:2200,prof:600,portas:2,prateleiras:2,gavetas:2,rodape:true,rodapeAlt:100,
     extras:(m,r)=>r.avisos.push("Deixe os vãos do forno e do micro-ondas nas medidas do aparelho, com ventilação atrás.")},
   ilha:{nome:"Ilha de cozinha",base:"balcao",grupo:"Cozinha",larg:1600,alt:900,prof:900,portas:4,prateleiras:1,divisoes:1,rodape:true,rodapeAlt:100},
+  piabanheiro:{nome:"Gabinete sob a pia com nichos",grupo:"Banheiro e lavanderia",acabCaixa:"fb_saara",corCaixa:"#D0C7BE",acabFrente:"fb_saara",corFrente:"#D0C7BE"},
   gabinete:{nome:"Gabinete de banheiro",base:"aereo",grupo:"Banheiro e lavanderia",larg:800,alt:550,prof:450,portas:2,prateleiras:0,
     extras:(m,r)=>r.avisos.push("Confira o recorte da cuba e a saída do sifão antes de fechar o fundo.")},
   espelheira:{nome:"Espelheira",base:"aereo",grupo:"Banheiro e lavanderia",larg:800,alt:700,prof:150,portas:2,prateleiras:2,
@@ -1866,6 +1869,127 @@ function modeloHomeTheater(m){
   avisos.push("Antes de fechar o painel, deixe o furo ou o eletroduto para os cabos da TV passarem por trás das ripas.");
   return {parts,lista,avisos,ferragens:ferr,e,W:Ww,H:Hw,D:D+zF+40,dimW:{x0:xR,x1:xR+Wr,label:`rack ${Math.round(Wr)} mm`},dimH:{y0:0,y1:Htot,label:`${Math.round(Htot)} mm do chão`},Htot};
 }
+function modeloPiaBanheiro(m){
+  const e=Math.max(6,+m.esp||15),ef=Math.max(6,+m.espFrente||e),W=+m.larg||0,H=+m.alt||0,D=+m.prof||0;
+  const rod=Math.max(0,+m.rodapeAlt||0),rec=Math.max(0,Math.min(D/3,+m.rodapeRecuo||0));
+  const parts=[],lista=[],avisos=[],ferr=[];
+  const add=(nome,cat,x,y,z,w,h,d)=>parts.push({nome,cat,x,y,z,w,h,d});
+  const pc=(nome,qtd,comp,larg,fita,o)=>{comp=Math.round(comp);larg=Math.round(larg);if(qtd>0&&comp>0&&larg>0)lista.push(Object.assign({nome,qtd,comp,larg,fita:fita||"",fundo:false},o||{}));};
+  const nl=Math.max(0,+m.nichoLarg||0),Wc=W-4*e-2*nl;
+  if(W<400||H<rod+300||D<250){avisos.push("Medidas pequenas demais para montar o gabinete.");return {parts,lista,avisos,ferragens:[],e,W,H,D};}
+  if(Wc<300){avisos.push("Os nichos estão largos demais: o vão central ficou com menos de 300 mm.");return {parts,lista,avisos,ferragens:[],e,W,H,D};}
+  const Hl=H-rod-e,yl=rod+e,x1=e+nl,x2=W-2*e-nl;
+  /* caixa */
+  add("Base","caixa",0,rod,0,W,e,D);pc("Base",1,W,D,"c1l1l2");
+  add("Lateral","caixa",0,yl,0,e,Hl,D);add("Lateral","caixa",W-e,yl,0,e,Hl,D);pc("Lateral",2,Hl,D,"c1");
+  if(nl>0){add("Divisória","caixa",x1,yl,0,e,Hl,D);add("Divisória","caixa",x2,yl,0,e,Hl,D);pc("Divisória",2,Hl,D,"c1");
+    add("Tampo do nicho","caixa",e,H-e,0,nl,e,D);add("Tampo do nicho","caixa",x2+e,H-e,0,nl,e,D);pc("Tampo do nicho",2,nl,D,"c1");}
+  add("Travessa","caixa",x1+e,H-e,D-100,Wc,e,100);add("Travessa","caixa",x1+e,H-e,0,Wc,e,100);pc("Travessa",2,Wc,100,"");
+  if(rod){add("Rodapé","caixa",0,0,D-rec-e,W,rod,e);add("Rodapé traseiro","caixa",0,0,40,W,rod,e);pc("Rodapé",1,W,rod,"c1");pc("Rodapé traseiro",1,W,rod,"");}
+  /* nichos */
+  const N=nl>0?Math.max(0,Math.min(4,Math.round(m.nichoPrat??1))):0;
+  if(N){const gap=(Hl-e-N*e)/(N+1);
+    [e,x2+e].forEach(xv=>{for(let k=1;k<=N;k++)add("Prateleira do nicho","caixa",xv+1,yl+k*gap+(k-1)*e,0,nl-2,e,D-20);});
+    pc("Prateleira do nicho",2*N,nl-2,D-20,"c1");ferr.push(["Suporte de prateleira",8*N]);}
+  if(nl>0&&m.fundoNicho!==false){[e,x2+e].forEach(xv=>add("Fundo do nicho","fundo",xv,yl,-3,nl,Hl-e,3));pc("Fundo do nicho",2,Hl-e,nl+10,"",{fundo:true});}
+  /* frentes: basculante em cima, gavetão embaixo */
+  const Hf=H-rod,hg=Math.max(150,Math.min(Hf-150,+m.gavetaoAlt||Hf/2)),hb=Hf-hg;
+  const xf=x1+e/2+1.5,Wf=Wc+e-3;
+  add("Prateleira central","caixa",x1+e,rod+hg-e/2,0,Wc,e,D-20);pc("Prateleira central",1,Wc,D-20,"c1");
+  add("Frente do gavetão","frente",xf,rod+1.5,D,Wf,hg-3,ef);
+  add("Frente basculante","frente",xf,rod+hg+1.5,D,Wf,hb-3,ef);
+  add("Puxador perfil","puxador",xf,rod+hg-14,D+ef,Wf,12,10);add("Puxador perfil","puxador",xf,H-14,D+ef,Wf,12,10);
+  pc("Frente do gavetão",1,Wf,hg-3,"c1c2l1l2",{esp:ef});pc("Frente basculante",1,Wf,hb-3,"c1c2l1l2",{esp:ef});
+  const bd=Math.max(250,Math.floor((D-30)/50)*50),bh=Math.max(80,Math.round(hg-e-60)),bw=Wc-26;
+  add("Gaveta","gaveta",x1+e+13,yl+10,D-bd,bw,bh,bd);
+  pc("Lateral de gaveta",2,bd,bh,"c1");pc("Frente/traseira de gaveta",2,bw-2*e,bh,"c1");pc("Fundo de gaveta",1,bw,bd,"",{fundo:true});
+  ferr.push([`Corrediça telescópica com amortecimento ${bd} mm (par)`,1]);
+  ferr.push(["Pistão a gás para basculante (abre de cima para baixo)",2]);
+  ferr.push(["Dobradiça para basculante (eixo embaixo)",2]);
+  ferr.push(["Puxador perfil de alumínio (metros)",Math.ceil(Wf*2*1.05/100)/10]);
+  ferr.push(["Parafuso 4,0 x 40",48]);ferr.push(["Silicone para fixar no tampo/parede",1]);
+  avisos.push("Confira a altura do sifão e da cuba: o basculante abre sobre a prateleira central e o gavetão fica embaixo dela.");
+  if(ef!==e)avisos.push(`Frentes em MDF ${ef} mm e caixa em ${e} mm: vão em chapas separadas no plano de corte.`);
+  return {parts,lista,avisos,ferragens:ferr,e,W,H,D:D+ef,Wc};
+}
+function modeloPiaCozinha(m){
+  const e=Math.max(6,+m.esp||15),ef=Math.max(6,+m.espFrente||e),W=+m.larg||0,H=+m.alt||0,Dt=+m.prof||0,D=Dt-ef;
+  const vao=Math.max(0,+m.vaoChao||0);
+  const parts=[],lista=[],avisos=[],ferr=[];
+  const add=(nome,cat,x,y,z,w,h,d)=>parts.push({nome,cat,x,y:y+vao,z,w,h,d});
+  const pc=(nome,qtd,comp,larg,fita,o)=>{comp=Math.round(comp);larg=Math.round(larg);if(qtd>0&&comp>0&&larg>0)lista.push(Object.assign({nome,qtd,comp,larg,fita:fita||"",fundo:false},o||{}));};
+  const Wg=Math.max(0,+m.gavLarg||0),g=Wg>0?Math.max(1,Math.min(5,Math.round(m.gavetas||3))):0,P=Math.max(1,Math.min(4,Math.round(m.portas||2)));
+  if(W<500||H<300||D<250){avisos.push("Medidas pequenas demais para montar o balcão.");return {parts,lista,avisos,ferragens:[],e,W,H,D:Dt};}
+  const Wd=W-Wg;
+  if(Wd<300){avisos.push("O gaveteiro está largo demais: sobrou menos de 300 mm para as portas.");return {parts,lista,avisos,ferragens:[],e,W,H,D:Dt};}
+  const Hl=H-e,xdv=Wg?Wd-e/2:0;
+  /* caixa */
+  add("Lateral","caixa",0,0,0,e,H,D);add("Lateral","caixa",W-e,0,0,e,H,D);pc("Lateral",2,H,D,"c1l1");
+  add("Base","caixa",e,0,0,W-2*e,e,D);pc("Base",1,W-2*e,D,"c1");
+  add("Travessa","caixa",e,H-e,D-100,W-2*e,e,100);add("Travessa","caixa",e,H-e,0,W-2*e,e,100);pc("Travessa",2,W-2*e,100,"");
+  if(Wg){add("Divisória","caixa",xdv,e,0,e,H-2*e,D);pc("Divisória",1,H-2*e,D,"c1");}
+  /* prateleira das portas */
+  const Wi=(Wg?xdv:W-e)-e;
+  if(m.prateleira!==false){const dt=Math.max(100,Math.min(H-150,+m.pratDoTopo||300));
+    add("Prateleira","caixa",e+1,H-dt-e,0,Wi-2,e,D-15);pc("Prateleira",1,Wi-2,D-15,"c1");ferr.push(["Suporte de prateleira",4]);
+    avisos.push("Faça o recorte na prateleira para o sifão passar (ou divida em duas).");}
+  if(m.fundo){add("Fundo","fundo",0,0,-3,W,H,3);pc("Fundo",1,W,H,"",{fundo:true});}
+  /* portas */
+  const dw=(Wd-3-(P-1)*3)/P,dh=H-3;
+  for(let i=0;i<P;i++){const x=1.5+i*(dw+3);add("Porta","porta",x,1.5,D,dw,dh,ef);add("Puxador perfil","puxador",x,H-14,D+ef,dw,12,10);}
+  pc("Porta",P,dh,dw,"c1c2l1l2",{esp:ef});
+  const q=dh<=900?2:3;ferr.push(["Dobradiça 35 mm com amortecimento",P*q]);
+  /* gaveteiro */
+  let perfil=P*dw;
+  if(g){const fh=H/g,gi=W-e-(xdv+e),bd=Math.max(250,Math.floor((D-30)/50)*50),bh=Math.max(60,Math.round(fh-45)),bw=gi-26;
+    for(let i=0;i<g;i++){const y=i*fh;add("Frente de gaveta","frente",Wd+1.5,y+1.5,D,Wg-3,fh-3,ef);add("Puxador perfil","puxador",Wd+1.5,y+fh-14,D+ef,Wg-3,12,10);
+      add("Gaveta","gaveta",xdv+e+13,e+i*((H-2*e)/g)+8,D-bd,bw,Math.min(bh,(H-2*e)/g-25),bd);}
+    pc("Frente de gaveta",g,Wg-3,fh-3,"c1c2l1l2",{esp:ef});
+    pc("Lateral de gaveta",2*g,bd,bh,"c1");pc("Frente/traseira de gaveta",2*g,bw-2*e,bh,"c1");pc("Fundo de gaveta",g,bw,bd,"",{fundo:true});
+    ferr.push([`Corrediça telescópica com amortecimento ${bd} mm (par)`,g]);perfil+=g*(Wg-3);}
+  ferr.push(["Puxador perfil de alumínio (metros)",Math.ceil(perfil*1.05/100)/10]);
+  if(m.moldura!==false){pc("Moldura superior (ajustar na obra)",1,W,50,"c1");pc("Moldura lateral (ajustar na obra)",2,H,50,"c1");
+    avisos.push("As molduras fecham as frestas no mármore e na parede: corte um pouco maior e ajuste na obra.");}
+  if(vao>0){ferr.push(["Cantoneira ou suporte para fixar na parede",W>1200?6:4]);avisos.push(`Balcão suspenso: ${Math.round(vao)} mm livres até o chão.`);}
+  else if(H>=500)ferr.push(["Pé regulável",W>1000?6:4]);
+  ferr.push(["Parafuso 4,0 x 40",40+g*8]);
+  if(ef!==e)avisos.push(`Frentes em MDF ${ef} mm e caixa em ${e} mm: vão em chapas separadas no plano de corte.`);
+  return {parts,lista,avisos,ferragens:ferr,e,W,H:H+vao,D:Dt,dimH:{y0:vao,y1:vao+H,label:`${Math.round(H)} mm`},Wd,Wg};
+}
+function ajustesPiaBanheiro(m){__m=m;const e=+m.esp||15,Wc=Math.round((+m.larg||0)-4*e-2*(+m.nichoLarg||0));
+  return `<section class="card section-gap"><h3>${icon("sliders",18)}Medidas</h3>
+    <div class="fields">
+      <div class="three">${campoMv("larg","Largura")}${campoMv("alt","Altura")}${campoMv("prof","Profund.")}</div>
+      <div class="two">${campoMv("nichoLarg","Nicho (vão interno)")}<label class="f">Vão central<input class="in" data-calc="central" value="${Wc} mm" disabled></label></div>
+      <div class="two">${campoMv("gavetaoAlt","Frente do gavetão")}${campoMv("rodapeAlt","Rodapé")}</div>
+      ${contadorMv("nichoPrat","Prateleiras em cada nicho",0)}
+    </div>
+    <details class="mais" ${S.mais?"open":""}><summary>Mais opções</summary><div class="fields">
+      <div class="two">${campoMv("rodapeRecuo","Recuo do rodapé")}${campoMv("espFrente","Espessura das frentes")}</div>
+      ${campoMv("esp","Espessura da caixa")}
+      ${switchMv(m,"fundoNicho","Fundo nos nichos","O vão central fica aberto atrás por causa do encanamento")}
+      ${coresMv(m,"corCaixa","Padrão da caixa e dos nichos")}
+      ${coresMv(m,"corFrente","Padrão das frentes")}
+    </div></details></section>`;
+}
+function ajustesPiaCozinha(m){__m=m;
+  return `<section class="card section-gap"><h3>${icon("sliders",18)}Medidas</h3>
+    <div class="fields">
+      <div class="three">${campoMv("larg","Largura")}${campoMv("alt","Altura")}${campoMv("prof","Profund.")}</div>
+      <div class="two">${campoMv("gavLarg","Largura do gaveteiro")}<label class="f">Lado das portas<input class="in" data-calc="portas" value="${Math.round((+m.larg||0)-(+m.gavLarg||0))} mm" disabled></label></div>
+      <div class="two">${campoMv("vaoChao","Vão livre no chão")}${m.prateleira!==false?campoMv("pratDoTopo","Prateleira a (do topo)"):"<span></span>"}</div>
+      ${contadorMv("portas","Portas",1)}
+      ${+m.gavLarg>0?contadorMv("gavetas","Gavetas",1):""}
+    </div>
+    <details class="mais" ${S.mais?"open":""}><summary>Mais opções</summary><div class="fields">
+      ${switchMv(m,"prateleira","Prateleira atrás das portas","Com recorte para o sifão")}
+      ${switchMv(m,"moldura","Molduras de acabamento","Fecham as frestas no mármore e na parede")}
+      ${switchMv(m,"fundo","Fundo","Normalmente fica aberto por causa do encanamento")}
+      <div class="two">${campoMv("esp","Espessura da caixa")}${campoMv("espFrente","Espessura das frentes")}</div>
+      ${coresMv(m,"corCaixa","Padrão da caixa")}
+      ${coresMv(m,"corFrente","Padrão das portas e gavetas")}
+    </div></details></section>`;
+}
 function ajustesHomeTheater(m){__m=m;
   const vals={painelChao:m.painelChao==null||m.painelChao===""?(m.peAlt??170):m.painelChao,painelAlt:m.painelAlt||((+m.alt||2200)-(+m.peAlt||170))};
   const campoV=(k,t)=>`<label class="f">${t}<div class="unit"><input class="in" data-mv="${k}" data-t="num" inputmode="numeric" value="${vals[k]??m[k]??""}"><span>mm</span></div></label>`;
@@ -1902,6 +2026,8 @@ function modelo(m){
   if(m.tipo==="cama")return modeloCama(m);
   if(m.tipo==="painel")return modeloPainel(m);
   if(m.tipo==="hometheater")return modeloHomeTheater(m);
+  if(m.tipo==="piabanheiro")return modeloPiaBanheiro(m);
+  if(m.tipo==="piacozinha")return modeloPiaCozinha(m);
   if(m.tipo==="prateleira")return modeloPrateleira(m);
   if(m.tipo==="tampo")return modeloTampo(m);
   if(m.tipo==="canto")return modeloCanto(m);
@@ -1967,6 +2093,8 @@ function descricaoMovel(m){
 }
 function descricaoMovelBase(m){
   if(m.tipo==="hometheater"){const n=m.portas||3;const r0=modeloHomeTheater(m);return {titulo:"Painel com rack",medidas:`painel ${m.painelLarg||m.larg-100} × ${Math.round((r0.Htot||0)-(m.painelChao==null||m.painelChao===""?(+m.peAlt||170):+m.painelChao))} · rack ${m.larg} × ${m.rackAlt} × ${m.prof} mm`,itens:["painel ripado",`rack com ${n} ${m.frente==="gavetas"?"gaveta":"frente"}${n>1?"s":""}`,m.frente==="gavetas"?"":"basculante"+(n>1?"s":""),m.prateleira!==false?"prateleira em cima":"",+m.peAlt>0?"pés palito":""].filter(Boolean).join(", ")};}
+  if(m.tipo==="piabanheiro"){const n=m.nichoPrat??1;return {titulo:"Gabinete sob a pia",medidas:`${m.larg} × ${m.alt} × ${m.prof} mm`,itens:[+m.nichoLarg>0?`2 nichos${n?` com ${n} prateleira${n>1?"s":""}`:""}`:"",`basculante e gavetão`,+m.rodapeAlt>0?`rodapé recuado de ${m.rodapeAlt} mm`:""].filter(Boolean).join(", ")};}
+  if(m.tipo==="piacozinha"){const P=m.portas||2,g=+m.gavLarg>0?(m.gavetas||3):0;return {titulo:"Balcão sob a pia",medidas:`${m.larg} × ${m.alt} × ${m.prof} mm`,itens:[`${P} porta${P>1?"s":""}`,g?`gaveteiro com ${g} gaveta${g>1?"s":""}`:"",m.prateleira!==false?"prateleira":"",+m.vaoChao>0?`suspenso a ${m.vaoChao} mm do chão`:""].filter(Boolean).join(", ")};}
   if(m.tipo==="cama"){const r=modeloCama(m);return {titulo:r.tam?`Cama ${r.tam.toLowerCase()}`:"Cama",medidas:`colchão ${m.larg} × ${m.prof} mm`,itens:[m.bau?"com baú":"",`cabeceira de ${m.cabAlt} mm`,`base de ${m.alt} mm`].filter(Boolean).join(", ")};}
   if(m.tipo==="painel"){return {titulo:m.ripado?"Painel ripado":"Painel de TV",medidas:`${m.larg} × ${m.alt} mm`,itens:[m.ripado?`ripas de ${m.ripaLarg} mm`:"",m.nicho?"com prateleira":"",m.altChao?`a ${m.altChao} mm do chão`:""].filter(Boolean).join(", ")};}
   if(m.tipo==="canto"){const q=Math.max(1,m.qtd||1);return {titulo:q>1?`${q} prateleiras de canto`:"Prateleira de canto",medidas:`${m.larg} × ${m.prof} mm`,itens:["quarto de círculo",(SUPORTES[m.suporte]||(m.suporte==="cantoneira"?"cantoneira":"")).toLowerCase(),m.encosto?"com encosto":"",m.dupla?"engrossada":""].filter(Boolean).join(", ")};}
@@ -2160,7 +2288,7 @@ function aplicarMovel(p){
   const temFundo=r.lista.some(x=>x.fundo);const idFundo=temFundo?chapaFundo(p):null;
   const manuais=p.pecas.filter(x=>!(x.origem==="movel"&&x.movelId===p.movel.id));
   const geradas=r.lista.map(x=>{const f={c1:false,c2:false,l1:false,l2:false};["c1","c2","l1","l2"].forEach(k=>{if(x.fita.includes(k))f[k]=true});
-    return {id:uid(),nome:x.nome,qtd:x.qtd,comp:x.comp,larg:x.larg,material:x.fundo?idFundo:(padPeca(mv,x.nome)?chapaPadrao(p,padPeca(mv,x.nome).chapa||padPeca(mv,x.nome).nome,espM):(/^(Porta|Frente|Ripa)/.test(x.nome)?idFrente:principal)),veio:false,fita:f,origem:"movel",movelId:p.movel.id,curva:x.curva||"",curvaMm:x.curvaMm||0};});
+    return {id:uid(),nome:x.nome,qtd:x.qtd,comp:x.comp,larg:x.larg,material:x.fundo?idFundo:(x.esp&&+x.esp!==espM)?chapaPadrao(p,(padPeca(mv,x.nome)||padraoDe(mv,/^(Porta|Frente|Ripa)/.test(x.nome)?"corFrente":"corCaixa")).chapa||(padPeca(mv,x.nome)||padraoDe(mv,/^(Porta|Frente|Ripa)/.test(x.nome)?"corFrente":"corCaixa")).nome,+x.esp):(padPeca(mv,x.nome)?chapaPadrao(p,padPeca(mv,x.nome).chapa||padPeca(mv,x.nome).nome,espM):(/^(Porta|Frente|Ripa)/.test(x.nome)?idFrente:principal)),veio:false,fita:f,origem:"movel",movelId:p.movel.id,curva:x.curva||"",curvaMm:x.curvaMm||0};});
   p.pecas=[...geradas,...manuais];
   limparChapas(p);
   if(!p.nome.trim())p.nome=descricaoMovel(p.movel).titulo;
@@ -2186,7 +2314,7 @@ function parseMovel(txt){
   const V=[[/guarda.?roupa|roupeiro/,"guardaroupa"],[/cabeceira (?:de|da|pra|para) cama|painel de cabeceira|cabeceira ripada|cabeceira estofada/,"cabeceiraCama"],[/\bcama\b|\bbox\b.*ba[uú]/,"cama"],
     [/painel.*\brack\b|\brack\b.*painel|home ?theat(?:er|re)/,"hometheater"],[/painel ripado|\bripado\b/,"ripado"],[/painel/,"painel"],[/aparador/,"aparador"],[/buffet|buf[eê]/,"buffet"],[/cristaleira/,"cristaleira"],[/mesa de centro/,"mesacentro"],
     [/mesa (?:de )?(?:canto|lateral|apoio)|mesinha/,"mesalateral"],[/c[oô]moda/,"comoda"],[/sapateira/,"sapateira"],[/penteadeira/,"penteadeira"],[/paneleiro/,"paneleiro"],
-    [/torre quente|torre (?:de|do|pra) (?:forno|micro)/,"torrequente"],[/\bilha\b/,"ilha"],[/espelheira/,"espelheira"],[/gabinete|banheiro|cuba/,"gabinete"],[/lavanderia|[áa]rea de servi[çc]o/,"lavanderia"],[/mesa de jantar/,"mesa"]];
+    [/torre quente|torre (?:de|do|pra) (?:forno|micro)/,"torrequente"],[/\bilha\b/,"ilha"],[/espelheira/,"espelheira"],[/(?:sob|embaixo d[ae]|debaixo d[ae]) (?:a )?pia.*(?:banheiro|nicho)|(?:banheiro|nicho).*(?:sob|embaixo d[ae]|debaixo d[ae]) (?:a )?pia|gabinete.*nicho/,"piabanheiro"],[/(?:sob|embaixo d[ae]|debaixo d[ae]) (?:a )?pia|balc[aã]o d[ae] pia|gabinete d[ae] cozinha/,"piacozinha"],[/gabinete|banheiro|cuba/,"gabinete"],[/lavanderia|[áa]rea de servi[çc]o/,"lavanderia"],[/mesa de jantar/,"mesa"]];
   for(const [re,k] of V){if(re.test(s)&&!(k==="cama"&&/cabeceira/.test(s)&&!/\bcama\b.*(?:com|e) cabeceira/.test(s))){r.tipo=k;break;}}
   if(r.tipo==="cama"){const tz=[[/solteir/,880,1880],[/vi[uú]va/,1280,1880],[/queen/,1580,1980],[/king/,1930,2030],[/casal/,1380,1880]].find(x=>x[0].test(s));if(tz){r._tamL=tz[1];r._tamC=tz[2];}if(/ba[uú]/.test(s))r.bau=true;}
   if(["painel","ripado","cabeceiraCama"].includes(r.tipo)){if(/ripad|ripa/.test(s))r.ripado=true;if(/prateleira|bandeja|nicho/.test(s))r.nicho=true;}
@@ -2390,7 +2518,7 @@ function vMovel(p){
     <div class="as-actions"><button class="btn dark" data-aba="corte">${icon("cut",18)}Ver plano de corte</button><button class="btn" data-aba="pecas">${icon("pieces",18)}Lista de peças</button></div>
     <button class="btn tape wide section-gap" data-act="mvSalvar">${icon("plus",18)}Salvar e adicionar outro móvel</button>
   </section>
-  ${({cama:ajustesCama,painel:ajustesPainel,hometheater:ajustesHomeTheater,prateleira:ajustesPrateleira,canto:ajustesCanto,tampo:ajustesTampo,suspensa:ajustesSuspensa,escrivaninha:ajustesEscrivaninha,mesa:ajustesMesa}[m.tipo]||ajustesCaixa)(m)}
+  ${({cama:ajustesCama,painel:ajustesPainel,hometheater:ajustesHomeTheater,piabanheiro:ajustesPiaBanheiro,piacozinha:ajustesPiaCozinha,prateleira:ajustesPrateleira,canto:ajustesCanto,tampo:ajustesTampo,suspensa:ajustesSuspensa,escrivaninha:ajustesEscrivaninha,mesa:ajustesMesa}[m.tipo]||ajustesCaixa)(m)}
   ${coresPorPeca(m)}
   <div class="section-gap">${box}</div>
 
@@ -2463,6 +2591,8 @@ function iconeTipo(k){
     nicho:`<rect x="10" y="14" width="28" height="20" ${f}/><rect x="14" y="18" width="20" height="12" fill="none" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="2 2"/>`};
   Object.assign(d,{
     cama:`<rect x="4" y="10" width="40" height="14" rx="2" ${f}/><rect x="4" y="24" width="40" height="10" ${f}/><rect x="8" y="17" width="12" height="7" rx="2" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.5"/><rect x="28" y="17" width="12" height="7" rx="2" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.5"/><path d="M6 34v5M42 34v5" stroke="var(--ink)" stroke-width="2"/>`,
+    piabanheiro:`<rect x="4" y="10" width="40" height="28" ${f}/><path d="M12 10v28M36 10v28M4 21h8M36 21h8M12 24h24" stroke="var(--ink)" stroke-width="1.6"/><path d="M15 13h18M15 27h18" stroke="var(--muted)" stroke-width="2"/><path d="M8 38v4h32v-4" stroke="var(--ink)" stroke-width="1.6" fill="none"/>`,
+    piacozinha:`<rect x="3" y="8" width="42" height="26" ${f}/><path d="M15 8v26M29 8v26M29 16.7h16M29 25.3h16" stroke="var(--ink)" stroke-width="1.6"/><path d="M5 11h8M17 11h10M31 11h12M31 19.5h12M31 28h12" stroke="var(--muted)" stroke-width="1.8"/><path d="M3 42h42" stroke="var(--muted)" stroke-width="2" stroke-dasharray="3 3"/>`,
     hometheater:`<rect x="8" y="3" width="32" height="28" ${f}/><path d="M12 3v28M16 3v28M20 3v28M24 3v28M28 3v28M32 3v28M36 3v28" stroke="var(--ink)" stroke-width="1"/><rect x="7" y="8" width="34" height="2.5" rx="1" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.2"/><rect x="15" y="13" width="18" height="10" fill="var(--ink)"/><rect x="5" y="31" width="38" height="8" ${f}/><path d="M17.7 31v8M30.3 31v8" stroke="var(--ink)" stroke-width="1.2"/><path d="M9 39l-2 6M39 39l2 6M24 39v5" stroke="var(--ink)" stroke-width="2"/>`,
     painel:`<rect x="6" y="6" width="36" height="30" ${f}/><rect x="12" y="12" width="24" height="14" rx="1" fill="var(--ink)"/><path d="M8 42h32" stroke="var(--muted)" stroke-width="2"/>`,
     ripado:`<rect x="8" y="4" width="32" height="40" ${f}/><path d="M13 4v40M18 4v40M23 4v40M28 4v40M33 4v40" stroke="var(--ink)" stroke-width="2"/>`,
@@ -2736,6 +2866,8 @@ function aoEditar(e){
   if(el.dataset.mv){const p=S.projetos.get(S.atual);if(!p||!p.movel)return;p.movel[el.dataset.mv]=valorDe(el);
     if(el.type==="checkbox"){aplicarMovel(p);salvar(S.atual);redesenhar();return;}
     clearTimeout(aoEditar._m);aoEditar._m=setTimeout(()=>{aplicarMovel(p);salvar(S.atual);atualizarVista();statsMovel(p);
+      if(p.movel.tipo==="piabanheiro"||p.movel.tipo==="piacozinha"){const m=p.movel;const a=document.querySelector('[data-calc="central"]');if(a)a.value=Math.round((+m.larg||0)-4*(+m.esp||15)-2*(+m.nichoLarg||0))+" mm";
+        const b=document.querySelector('[data-calc="portas"]');if(b)b.value=Math.round((+m.larg||0)-(+m.gavLarg||0))+" mm";const t=document.querySelector(".show-m");if(t)t.textContent=descricaoMovel(m).medidas;}
       if(p.movel.tipo==="hometheater"){const m=p.movel,ch=m.painelChao==null||m.painelChao===""?(+m.peAlt||170):+m.painelChao;
         const a=document.querySelector('[data-calc="topo"]');if(a)a.value=Math.round(ch+(+m.painelAlt||0))+" mm";
         const b=document.querySelector('[data-calc="compes"]');if(b)b.value=Math.round((+m.rackAlt||0)+(+m.peAlt||0))+" mm";
@@ -2834,7 +2966,7 @@ document.addEventListener("click",e=>{
   if(b.dataset.peca){abrirPeca(b.dataset.peca);return;}
   if(b.dataset.preset&&p){p.movel=novoMovel(b.dataset.preset,p);aplicarMovel(p);salvar(S.atual);S.vista="3d";render();window.scrollTo(0,0);return;}
   if(b.dataset.tipo&&p&&p.movel){const o=p.movel;const m=novoMovel(b.dataset.tipo,p);m.corCaixa=o.corCaixa;m.corFrente=o.corFrente;m.esp=o.esp;m.id=o.id;p.movel=m;aplicarMovel(p);salvar(S.atual);redesenhar();return;}
-  if(b.dataset.mvs&&p&&p.movel){const k=b.dataset.mvs;const lim=(p.movel.tipo==="escrivaninha"&&k==="gavetas")?3:(p.movel.tipo==="suspensa"&&k==="prateleiras")?5:{portas:8,gavetas:12,prateleiras:20,divisoes:8,qtd:200}[k];p.movel[k]=Math.max(k==="qtd"?1:0,Math.min(lim,(p.movel[k]||0)+Number(b.dataset.dd)));aplicarMovel(p);salvar(S.atual);redesenhar();return;}
+  if(b.dataset.mvs&&p&&p.movel){const k=b.dataset.mvs;const lim=k==="nichoPrat"?4:(p.movel.tipo==="piacozinha"&&k==="portas")?4:(p.movel.tipo==="piacozinha"&&k==="gavetas")?5:(p.movel.tipo==="escrivaninha"&&k==="gavetas")?3:(p.movel.tipo==="suspensa"&&k==="prateleiras")?5:{portas:8,gavetas:12,prateleiras:20,divisoes:8,qtd:200}[k];p.movel[k]=Math.max(k==="qtd"||(p.movel.tipo==="piacozinha"&&(k==="portas"||k==="gavetas"))?1:0,Math.min(lim,(p.movel[k]||0)+Number(b.dataset.dd)));aplicarMovel(p);salvar(S.atual);redesenhar();return;}
   if(b.dataset.padrao&&p&&p.movel){dlgPadrao(b.dataset.padrao);return;}
   if(b.dataset.pecareset&&p&&p.movel){const n=b.dataset.pecareset;if(n==="*")p.movel.coresPecas={};else{const cp=Object.assign({},p.movel.coresPecas);delete cp[n];p.movel.coresPecas=cp;}S.corPecaAberto=true;aplicarMovel(p);salvar(S.atual);redesenhar();toast("Peça voltou ao padrão do móvel.");return;}
   if(b.dataset.padgrp){S.padGrp=b.dataset.padgrp;const st=dlgC.scrollTop;dlgPadrao(S.padK);dlgC.scrollTop=0;return;}
