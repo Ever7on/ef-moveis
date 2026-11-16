@@ -350,6 +350,31 @@ dialog::backdrop{background:rgba(10,12,14,.5)}
 @media (prefers-reduced-motion:reduce){.spin{animation-duration:2.4s}}
 
 /* Móvel */
+.dash{background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--shadow);padding:16px}
+.dash-t{display:flex;align-items:center;gap:8px;margin:0 0 12px;font-size:16px;font-weight:800;color:var(--deep)}
+.dk-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.dk-grid>*,.ds-grid>*{margin:0!important}
+.dk{border:0;background:var(--surface-2);border-radius:var(--r-md);padding:11px 12px;min-height:74px;justify-content:space-between;text-align:left;display:flex;flex-direction:column;gap:2px;cursor:pointer;color:var(--ink)}
+.dk .l{font-size:12.5px;font-weight:600;color:var(--muted)}.dk .v{font-family:var(--num);font-size:24px;font-weight:800;line-height:1.1}
+.dk.bad{background:var(--danger-soft)}.dk.bad .v,.dk.bad .l{color:var(--danger)}
+.dk.warn{background:var(--st0s)}.dk.warn .v{color:var(--st0)}
+.dk.money .v{font-size:20px;color:var(--ok)}
+.dbar{display:flex;gap:3px;height:10px;margin:14px 0 10px}.dbar i{display:block;border-radius:99px;min-width:6px}
+.dbar.sm{height:7px;margin:0;flex:1;max-width:140px}
+.ds-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.ds{border:0;border-left:4px solid var(--c);background:var(--cs);border-radius:var(--r-md);padding:9px 10px;text-align:left;display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:6px;cursor:pointer;color:var(--ink)}
+.ds .n{grid-row:1 / span 2;font-family:var(--num);font-size:26px;font-weight:800;color:var(--c);line-height:1;align-self:center}
+.ds .t{font-size:12.5px;font-weight:700;line-height:1.15;align-self:end}.ds .p{font-size:11.5px;color:var(--muted);font-weight:600}
+.ds-note{margin:10px 0 0;font-size:13px;color:var(--muted)}
+.ds-line{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;font-size:13px;color:var(--muted)}.ds-line span:first-child{display:inline-flex;align-items:center;gap:6px}
+.ds-alert{margin-top:12px;padding:11px;border-radius:var(--r-md);background:var(--ok-soft);display:flex;flex-direction:column;gap:6px}
+.ds-alert>b{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ok)}
+.ds-alert.bad{background:var(--danger-soft)}.ds-alert.bad>b{color:var(--danger)}
+.ds-os{border:0;background:var(--surface);border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:8px;text-align:left;cursor:pointer;color:var(--ink);font-size:13.5px}
+.ds-os .nm{flex:1;min-width:0;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mais-os{font-size:12px;color:var(--muted);padding-left:4px}
+.f-chip{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;padding:8px 8px 8px 14px;border-radius:999px;background:var(--surface);box-shadow:var(--shadow);font-size:13.5px}
+.f-chip button{border:0;background:var(--surface-2);border-radius:999px;padding:6px 11px;font-weight:700;font-size:12.5px;display:inline-flex;align-items:center;gap:4px;cursor:pointer;color:var(--ink)}
 .sec-t{font-size:16px;font-weight:800;margin:22px 0 10px;color:var(--deep)}
 .presets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 @media (min-width:700px){.presets{grid-template-columns:repeat(4,minmax(0,1fr))}}
@@ -811,7 +836,7 @@ plus:'<path d="M12 5v14M5 12h14"/>',
 folder:'<path d="M3 7.5A2.5 2.5 0 0 1 5.5 5H9l2 2h7.5A2.5 2.5 0 0 1 21 9.5v8a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5z"/>',
 users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M21.5 20a6.5 6.5 0 0 0-4-6"/>',
 pdf:'<path d="M14 3H6.5A2.5 2.5 0 0 0 4 5.5v13A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V9z"/><path d="M14 3v6h6M12 11v6M9 14l3 3 3-3"/>',
-info:'<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h8M8 17h5"/>',
+chart:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>',clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',info:'<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h8M8 17h5"/>',
 pieces:'<rect x="3" y="4" width="11" height="7" rx="1.2"/><rect x="3" y="14" width="7" height="6" rx="1.2"/><rect x="13" y="14" width="8" height="6" rx="1.2"/><rect x="17" y="4" width="4" height="7" rx="1.2"/>',
 cut:'<rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="M12 5v14M3 12h9" stroke-dasharray="2 2.5"/>',
 cart:'<circle cx="9" cy="20" r="1.3"/><circle cx="18" cy="20" r="1.3"/><path d="M2 3h3l2.6 12.2a1.5 1.5 0 0 0 1.5 1.2h8.8a1.5 1.5 0 0 0 1.5-1.1L21 8H6"/>',
@@ -928,6 +953,35 @@ function backupRestaurar(file){const fr=new FileReader();fr.onload=()=>{try{cons
     numerarOS();S.projetos.forEach((v,k)=>salvar(k));render();toast(`${n} projeto${n===1?"":"s"} restaurado${n===1?"":"s"}.`);}
   catch(e){toast("Não consegui ler o arquivo de backup.");}};fr.readAsText(file);}
 function saudacao(){const h=new Date().getHours();return h<12?"Bom dia":h<18?"Boa tarde":"Boa noite";}
+function painelStatus(todos){
+  if(!todos.length)return `<section class="dash section-gap"><h3 class="dash-t">${icon("chart",18)}Painel</h3><p class="as-note" style="margin:0;color:var(--muted)">Quando você criar a primeira OS, o andamento de todas aparece aqui.</p></section>`;
+  const abertos=todos.filter(([,p])=>p.status!=="Entregue");
+  const atras=abertos.filter(([,p])=>p.prazo&&dias(p.prazo)<0);
+  const semana=abertos.filter(([,p])=>p.prazo&&dias(p.prazo)>=0&&dias(p.prazo)<=7);
+  const aReceber=todos.reduce((a,[,p])=>a+Math.max(0,calc(p).saldo),0);
+  const emAberto=abertos.reduce((a,[,p])=>a+(Number(p.valor)||0),0);
+  const cont=STATUS.map(st=>todos.filter(([,p])=>(p.status||"Orçamento")===st).length);
+  const semAviso=abertos.filter(([,p])=>p.status!=="Orçamento"&&!(p.avisos&&p.avisos[p.status]));
+  let corteTot=0,corteFeito=0;
+  todos.filter(([,p])=>p.status==="Corte").forEach(([,p])=>{try{planejar(p).forEach(g=>g.sheets.forEach((x,i)=>{corteTot++;if(p.cortadas&&p.cortadas[g.chapa.id+":"+i])corteFeito++;}));}catch(e){}});
+  const nOpen=abertos.length||1;
+  const kpi=(l,v,cls,f)=>`<button class="dk ${cls||""}" data-dfiltro="${f||"Abertos"}"><span class="l">${l}</span><span class="v">${v}</span></button>`;
+  const brlK=v=>brl(v).replace(/,00$/,"");
+  return `<section class="dash section-gap"><h3 class="dash-t">${icon("chart",18)}Painel das OS</h3>
+    <div class="dk-grid">
+      ${kpi("Em andamento",abertos.length)}
+      ${kpi("Atrasadas",atras.length,atras.length?"bad":"","atrasadas")}
+      ${kpi("Entregar em 7 dias",semana.length,semana.length?"warn":"","semana")}
+      ${kpi("A receber",`<span class="m">${brlK(aReceber)}</span>`,"money","Todos")}
+    </div>
+    <div class="dbar" aria-hidden="true">${STATUS.slice(0,-1).map((st,i)=>cont[i]?`<i style="flex:${cont[i]};background:var(--st${i})"></i>`:"").join("")||"<i style='flex:1;background:var(--line)'></i>"}</div>
+    <div class="ds-grid">${STATUS.map((st,i)=>`<button class="ds" data-dfiltro="${st}" style="--c:var(--st${i});--cs:var(--st${i}s)"><span class="n">${cont[i]}</span><span class="t">${st}</span>${i<STATUS.length-1&&abertos.length?`<span class="p">${Math.round(cont[i]/nOpen*100)}%</span>`:""}</button>`).join("")}</div>
+    ${emAberto?`<p class="ds-note">Valor das OS em andamento: <b class="m">${brl(emAberto)}</b></p>`:""}
+    ${corteTot?`<div class="ds-line"><span>${icon("cut",16)}Corte: <b>${corteFeito} de ${corteTot}</b> chapas cortadas</span><span class="dbar sm"><i style="flex:${corteFeito||0};background:var(--st2)"></i><i style="flex:${corteTot-corteFeito};background:var(--line)"></i></span></div>`:""}
+    ${semAviso.length?`<div class="ds-alert"><b>${icon("phone",16)}Clientes sem aviso da etapa atual</b>${semAviso.slice(0,4).map(([id,p])=>`<button class="ds-os" data-abrir="${id}"><span class="os-mini">${fmtOS(p.os)}</span><span class="nm">${esc(p.cliente||p.nome||"Sem cliente")}</span><span class="st-badge sb-${stIdx(p.status)}">${esc(p.status)}</span></button>`).join("")}${semAviso.length>4?`<span class="mais-os">e mais ${semAviso.length-4}</span>`:""}</div>`:""}
+    ${atras.length?`<div class="ds-alert bad"><b>${icon("clock",16)}Atrasadas</b>${atras.slice(0,4).map(([id,p])=>`<button class="ds-os" data-abrir="${id}"><span class="os-mini">${fmtOS(p.os)}</span><span class="nm">${esc(p.cliente||p.nome||"Sem cliente")}</span>${dueChip(p)}</button>`).join("")}</div>`:""}
+  </section>`;
+}
 function vInicio(){
   const todos=ordenados(),abertos=todos.filter(([,p])=>p.status!=="Entregue");
   const atras=abertos.filter(([,p])=>p.prazo&&dias(p.prazo)<0).length;
@@ -945,7 +999,7 @@ function vInicio(){
     <span class="os-go" aria-hidden="true">›</span>
   </button>
   <div class="two section-gap"><button class="btn tape" data-act="novo">${icon("plus",18)}Nova OS</button><button class="btn" data-nav="clientes">${icon("users",18)}Clientes</button></div>
-  <div class="tiles section-gap"><div class="tile"><div class="l">Abertas</div><div class="v">${abertos.length}</div></div><div class="tile"><div class="l">Entregues</div><div class="v">${todos.length-abertos.length}</div></div><div class="tile"><div class="l">A receber</div><div class="v sm"><small class="cur">R$</small>${brl(aReceber).replace(/^R\$\s*/,()=>"")}</div></div></div>
+  ${painelStatus(todos)}
   ${prox.length?`<h3 class="sec-t">Próximas entregas</h3><div class="prox">${prox.map(([id,p])=>`<button class="prox-i" data-abrir="${id}"><span class="os-mini">${fmtOS(p.os)}</span><b>${esc(p.nome||"Projeto sem nome")}</b><span class="m">${esc(p.cliente||"Sem cliente")}</span>${dueChip(p)}</button>`).join("")}</div>`:""}
   <p class="intro-f">E.F Móveis e Planejados</p>`;
 }
@@ -957,10 +1011,11 @@ function vListaBase(){
   const abertos=todos.filter(([,p])=>p.status!=="Entregue");
   const aReceber=todos.reduce((a,[,p])=>a+Math.max(0,calc(p).saldo),0);
   const atras=abertos.filter(([,p])=>p.prazo&&dias(p.prazo)<0).length;
-  const lista=todos.filter(([,p])=>S.filtro==="Todos"||(S.filtro==="Abertos"?p.status!=="Entregue":p.status==="Entregue"));
+  const lista=todos.filter(([,p])=>S.filtro==="Todos"||(STATUS.includes(S.filtro)?(p.status||"Orçamento")===S.filtro:S.filtro==="atrasadas"?p.status!=="Entregue"&&p.prazo&&dias(p.prazo)<0:S.filtro==="semana"?p.status!=="Entregue"&&p.prazo&&dias(p.prazo)>=0&&dias(p.prazo)<=7:S.filtro==="Abertos"?p.status!=="Entregue":p.status==="Entregue"));
   return head+`<section class="hero"><div class="lbl">A receber dos clientes</div><div class="val">${brl(aReceber)}</div>
     <div class="hero-stats"><span>${abertos.length} em andamento</span>${atras?`<span class="bad">${atras} atrasado${atras>1?"s":""}</span>`:""}</div></section>
   <div class="seg section-gap" role="group" aria-label="Filtrar projetos">${[["Abertos","Em andamento"],["Entregues","Entregues"],["Todos","Todos"]].map(([k,t])=>`<button data-filtro="${k}" aria-pressed="${S.filtro===k}">${t}</button>`).join("")}</div>
+  ${STATUS.includes(S.filtro)||S.filtro==="atrasadas"||S.filtro==="semana"?`<div class="f-chip"><span>Mostrando: <b>${{atrasadas:"Atrasadas",semana:"Entregar em 7 dias"}[S.filtro]||"Etapa "+esc(S.filtro)}</b></span><button data-filtro="Abertos">${icon("x",14)}Limpar</button></div>`:""}
   ${lista.length?`<div class="cards">${lista.map(([id,p])=>{const c=calc(p),si=stIdx(p.status),v=Number(p.valor)||0;
     return `<button class="pcard" data-abrir="${id}">
       <div class="pc-top"><div style="min-width:0"><div class="os-mini">${fmtOS(p.os)}</div><div class="pc-name">${esc(p.nome||"Projeto sem nome")}</div><div class="pc-client">${esc(p.cliente||"Sem cliente")}</div></div>${dueChip(p)}</div>
@@ -2992,6 +3047,7 @@ document.addEventListener("click",e=>{
   const p=S.projetos.get(S.atual);
   if(b.dataset.nav){S.view=b.dataset.nav;render();window.scrollTo(0,0);return;}
   if(b.dataset.filtro){S.filtro=b.dataset.filtro;render();return;}
+  if(b.dataset.dfiltro){S.filtro=b.dataset.dfiltro;S.view="lista";render();window.scrollTo(0,0);return;}
   if(b.dataset.abrir){abrir(b.dataset.abrir);return;}
   if(b.dataset.aba){S.aba=b.dataset.aba;S.confirmDel=false;const y=Math.min(window.scrollY,app.querySelector(".ptabs")?app.querySelector(".ptabs").offsetTop-60:0);render();window.scrollTo(0,Math.max(0,y));return;}
   if(b.dataset.cortada&&p){p.cortadas=p.cortadas||{};const k=b.dataset.cortada;if(p.cortadas[k])delete p.cortadas[k];else{p.cortadas[k]=new Date().toISOString().slice(0,10);
